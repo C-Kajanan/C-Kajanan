@@ -1,8 +1,5 @@
 - 👋 Hi, I’m @C-Kajanan
-- 👀 I’m interested in Robotics
-- 🌱 I’m currently learning python and ubuntu
-- 💞️ I’m looking to collaborate on ROS
-- 📫 How to reach me c.kajanan2004@gmail.com
+- 📫 
 - 😄 Pronouns: He/Him
 - ⚡ Fun fact: I love standup comedy
 
