@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PulseChat</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <aside class="sidebar">
+        <h1>PulseChat</h1>
+        <form id="new-chat-form" class="new-chat-form">
+          <input id="chat-name" type="text" placeholder="Start chat with..." maxlength="30" required />
+          <button type="submit">Add</button>
+        </form>
+        <ul id="chat-list" class="chat-list" aria-label="Conversations"></ul>
+      </aside>
+
+      <section class="chat-panel">
+        <header class="chat-header">
+          <h2 id="chat-title">Choose a chat</h2>
+          <p id="chat-status">Your messages are saved locally.</p>
+        </header>
+
+        <ul id="message-list" class="message-list" aria-live="polite"></ul>
+
+        <form id="message-form" class="message-form">
+          <input id="message-input" type="text" placeholder="Type a message..." maxlength="500" required />
+          <button type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <template id="chat-item-template">
+      <li>
+        <button class="chat-item" type="button">
+          <span class="chat-name"></span>
+          <span class="chat-preview"></span>
+        </button>
+      </li>
+    </template>
+
+    <template id="message-item-template">
+      <li class="message-item">
+        <p class="message-text"></p>
+        <time class="message-time"></time>
+      </li>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
