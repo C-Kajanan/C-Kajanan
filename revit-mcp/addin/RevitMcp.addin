@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Revit MCP</Name>
+    <Assembly>RevitMcp\RevitMcp.dll</Assembly>
+    <AddInId>6F3C9B1E-2A4D-4E8B-9C71-5D0A3E8F4B21</AddInId>
+    <FullClassName>RevitMcp.App</FullClassName>
+    <VendorId>CKAJ</VendorId>
+    <VendorDescription>Revit MCP - https://github.com/C-Kajanan/C-Kajanan</VendorDescription>
+  </AddIn>
+</RevitAddIns>
