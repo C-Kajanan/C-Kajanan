@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
-    "test": "npm run build && node --test build/test/*.test.js"
+    "test": "npm run build && node --test build/test/*.test.js",
+    "bundle": "esbuild src/index.ts --bundle --minify --platform=node --format=esm --target=node18 --outfile=dist/revit-mcp.mjs \"--banner:js=import{createRequire}from'module';const require=createRequire(import.meta.url);\""
   },
   "keywords": [
     "mcp",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
     "typescript": "^7.0.2"
   }
 }
