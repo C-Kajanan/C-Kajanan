@@ -155,7 +155,7 @@ cd addin && dotnet build -p:RevitVersion=2026
 
 The add-in compiles on any OS against the [Nice3point.Revit.Api](https://github.com/Nice3point/RevitApi) reference packages. Running it needs Revit on Windows.
 
-To add a tool, write a static method `object Name(CommandContext c)` with `[McpCommand("tool_name")]` in `addin/Commands/`, and add a matching entry to `server/src/tools.ts`. After any change to the server, run `npm run bundle` and commit `server/dist/revit-mcp.mjs`, because that bundled file is what the plugin runs. If the change affects how Claude should use the tools, update `skills/revit/SKILL.md` too.
+To add a tool, write a static method `object Name(CommandContext c)` with `[McpCommand("tool_name")]` in `addin/Commands/`, and add a matching entry to `server/src/tools.ts`. To build the all-in-one release zip, run `package/build-package.sh`. It produces the add-in for every Revit version, the bundled server, the plugin, the skill, the Windows installer, and the source. After any change to the server, run `npm run bundle` and commit `server/dist/revit-mcp.mjs`, because that bundled file is what the plugin runs. If the change affects how Claude should use the tools, update `skills/revit/SKILL.md` too.
 
 ## License
 
