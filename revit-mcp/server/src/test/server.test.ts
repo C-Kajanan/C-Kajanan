@@ -44,6 +44,8 @@ test("exposes every tool and forwards calls to Revit", async () => {
   const revit = await startFakeRevit();
   const client = await connect({ REVIT_MCP_HOST: "127.0.0.1", REVIT_MCP_PORT: String(revit.port), REVIT_MCP_TOKEN: "s3cret" });
   try {
+    assert.match(client.getInstructions() ?? "", /millimetres/);
+
     const listed = await client.listTools();
     assert.deepEqual(listed.tools.map((t) => t.name).sort(), tools.map((t) => t.name).sort());
     assert.equal(listed.tools.find((t) => t.name === "delete_elements")?.annotations?.destructiveHint, true);

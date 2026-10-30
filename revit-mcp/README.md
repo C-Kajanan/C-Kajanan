@@ -44,7 +44,9 @@ npm run build
 
 ### Connect your MCP client
 
-**Claude Code plugin (recommended).** The plugin adds the MCP server plus a `revit` skill that teaches Claude how to use the tools well: millimetre units, looking up type names before placing, confirming before deleting, and verifying with screenshots. It runs a prebuilt, single-file server (`server/dist/revit-mcp.mjs`), so you only need Node.js. There's no npm install or build step.
+**Claude Desktop extension (one click).** Download `revit-mcp-<version>.mcpb` and double-click it, or drag it into Claude Desktop → Settings → Extensions. Optional settings (port, token, timeout) appear in the install dialog. To build it yourself, run `mcpb/build-mcpb.sh`. The bundle also sends Claude a short guide to using the tools well, the same guidance as the `revit` skill.
+
+**Claude Code plugin.** The plugin adds the MCP server plus a `revit` skill that teaches Claude how to use the tools well: millimetre units, looking up type names before placing, confirming before deleting, and verifying with screenshots. It runs a prebuilt, single-file server (`server/dist/revit-mcp.mjs`), so you only need Node.js. There's no npm install or build step.
 
 ```
 /plugin install revit --marketplace C-Kajanan/c-kajanan

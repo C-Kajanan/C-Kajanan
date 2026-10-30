@@ -25,6 +25,10 @@ echo "Server"
 mkdir -p "$out/server"
 cp "$root/server/dist/revit-mcp.mjs" "$out/server/"
 
+echo "MCP Bundle (.mcpb)"
+"$root/mcpb/build-mcpb.sh" >/dev/null
+cp "$root/mcpb/dist/revit-mcp-$version.mcpb" "$out/"
+
 echo "Plugin + skill"
 mkdir -p "$out/plugin/plugin/server/dist" "$out/plugin/.claude-plugin" "$out/skill"
 cp -r "$root/.claude-plugin" "$root/.mcp.json" "$root/skills" "$out/plugin/plugin/"

@@ -1,0 +1,4 @@
+build-mcpb.sh
+dist/
+.gitignore
+.mcpbignore

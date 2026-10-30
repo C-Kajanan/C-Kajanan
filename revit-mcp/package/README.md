@@ -18,6 +18,7 @@ To install for specific versions only, run `Install.ps1 -RevitVersion 2024,2025`
 | Folder | Contents |
 | --- | --- |
 | `addin/Revit2023` … `addin/Revit2026` | The Revit add-in for each version: the `RevitMcp.addin` manifest and the `RevitMcp/` folder. To install by hand, copy both into `%APPDATA%\Autodesk\Revit\Addins\<version>\` |
+| `revit-mcp-__VERSION__.mcpb` | One-click install for Claude Desktop: double-click it, or drag it into Settings → Extensions. You can set the port and token there. You still need the add-in, so run `Install.cmd -SkipClaudeDesktop` |
 | `server/revit-mcp.mjs` | The MCP server as one file with no dependencies to install. Run it with `node revit-mcp.mjs` |
 | `plugin/` | Claude Code plugin with the MCP server and the `revit` skill. Install it with `claude plugin marketplace add <path-to>/plugin` and then `claude plugin install revit@revit-mcp-local`, or from GitHub with `/plugin install revit --marketplace C-Kajanan/c-kajanan` |
 | `skill/revit/` and `skill/revit-skill.zip` | The `revit` skill on its own, which teaches Claude to use the tools well (units, safe edits, recipes). Upload the zip in Claude under Settings → Capabilities → Skills, or copy the folder to `~/.claude/skills/` |
