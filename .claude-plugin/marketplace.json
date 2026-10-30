@@ -1,0 +1,16 @@
+{
+  "name": "c-kajanan",
+  "owner": {
+    "name": "C-Kajanan"
+  },
+  "description": "Plugins by C-Kajanan, including the Revit MCP for working with Autodesk Revit models.",
+  "plugins": [
+    {
+      "name": "revit",
+      "source": "./revit-mcp",
+      "description": "Revit MCP server plus a skill for querying and editing the open Revit model.",
+      "version": "0.1.0",
+      "category": "productivity"
+    }
+  ]
+}

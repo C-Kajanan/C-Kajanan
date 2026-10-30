@@ -1,0 +1,189 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/mcpb/main/schemas/mcpb-manifest-v0.3.schema.json",
+  "manifest_version": "0.3",
+  "name": "revit-mcp",
+  "display_name": "Revit MCP",
+  "version": "0.1.0",
+  "description": "Let Claude read and edit the Autodesk Revit model you have open: query elements, edit parameters, model walls, floors and rooms, make sheets, and see views.",
+  "long_description": "Revit MCP connects Claude to a live Autodesk Revit session (2023–2026).\n\n**What Claude can do**\n- Read the model: document info, levels, views, selection, elements by category or parameter value, full element details, family types, rooms with areas\n- Edit data: set instance or type parameters in display units\n- Model: levels, grids, walls and wall loops, floors, rooms, and family instances, including doors and windows hosted in walls\n- Change: move, rotate, copy and delete elements\n- Show and document: select and zoom, color overrides, sheets, and PNG images of any view that Claude can look at\n\nEvery change is one undo step in Revit, and Revit warnings go back to Claude instead of opening dialogs.\n\n**Requires the free RevitMcp add-in in Revit.** Download `RevitMCP-v0.1.0.zip` from https://github.com/C-Kajanan/C-Kajanan/tree/main/revit-mcp and run `Install.cmd`, or copy the add-in for your Revit version into `%APPDATA%\\Autodesk\\Revit\\Addins\\<version>\\`. Then open a model and ask Claude to \"ping Revit\".\n\nThe add-in only listens on localhost and rejects browser requests. Set a shared token below for extra protection.",
+  "author": {
+    "name": "C-Kajanan",
+    "url": "https://github.com/C-Kajanan"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/C-Kajanan/C-Kajanan"
+  },
+  "homepage": "https://github.com/C-Kajanan/C-Kajanan/tree/main/revit-mcp",
+  "documentation": "https://github.com/C-Kajanan/C-Kajanan/blob/main/revit-mcp/README.md",
+  "support": "https://github.com/C-Kajanan/C-Kajanan/issues",
+  "icon": "icon.png",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "REVIT_MCP_PORT": "${user_config.port}",
+        "REVIT_MCP_TOKEN": "${user_config.token}",
+        "REVIT_MCP_TIMEOUT_MS": "${user_config.timeout_ms}"
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "ping",
+      "description": "Check that Revit and the RevitMcp add-in are reachable. Returns the Revit version and whether a document is open."
+    },
+    {
+      "name": "get_document_info",
+      "description": "Summary of the active Revit document: title, path, project info, units, phase, active view and element counts per major category."
+    },
+    {
+      "name": "list_levels",
+      "description": "All levels in the model with id, name and elevation (mm), sorted by elevation."
+    },
+    {
+      "name": "list_views",
+      "description": "Views and sheets in the model (non-template). Optionally filter by view type, e.g. FloorPlan, Section, ThreeD, Sheet, Schedule."
+    },
+    {
+      "name": "get_active_view",
+      "description": "Name, id, type, scale and associated level of the view currently open in Revit."
+    },
+    {
+      "name": "get_selection",
+      "description": "Elements the user currently has selected in Revit, with id, category, family, type and name."
+    },
+    {
+      "name": "query_elements",
+      "description": "Find elements by category (BuiltInCategory like OST_Walls or a display name like 'Doors'), optionally limited to a view, filtered by a parameter value, and with parameters included."
+    },
+    {
+      "name": "get_element",
+      "description": "Full details for one element: category, family/type, level, location (mm), bounding box and all instance and type parameters."
+    },
+    {
+      "name": "list_family_types",
+      "description": "Loadable family types (FamilySymbol) and system types (wall, floor, roof types) available to place. Filter by category."
+    },
+    {
+      "name": "list_rooms",
+      "description": "Placed rooms with number, name, level, area (m²), perimeter (mm) and volume (m³)."
+    },
+    {
+      "name": "export_view_image",
+      "description": "Render a view (default: active view) to a PNG so you can see the model. Returns an image."
+    },
+    {
+      "name": "set_parameter",
+      "description": "Set a parameter on an element. String values are parsed in the project's display units (e.g. '3000' for a length in a mm project, '3 m', or text). Numbers set the raw value in Revit internal units (feet, radians)."
+    },
+    {
+      "name": "create_level",
+      "description": "Create a level at an elevation (mm) and optionally create a matching floor plan view."
+    },
+    {
+      "name": "create_grid",
+      "description": "Create a straight grid line between two plan points (mm)."
+    },
+    {
+      "name": "create_wall",
+      "description": "Create a straight wall between two plan points (mm) on a level. Uses the default wall type if wallType is omitted."
+    },
+    {
+      "name": "create_walls_from_polyline",
+      "description": "Create a chain of walls through a list of plan points (mm). Set closed=true to close the loop, e.g. for a room outline."
+    },
+    {
+      "name": "create_floor",
+      "description": "Create a floor from a closed boundary of plan points (mm) on a level."
+    },
+    {
+      "name": "place_family_instance",
+      "description": "Place a family instance (furniture, equipment, columns, doors/windows in a host wall, etc.). For doors and windows, pass hostWallId and a point on that wall."
+    },
+    {
+      "name": "create_room",
+      "description": "Place a room at a plan point (mm) inside bounding walls on a level, with optional name and number."
+    },
+    {
+      "name": "move_elements",
+      "description": "Translate elements by a vector in mm."
+    },
+    {
+      "name": "rotate_elements",
+      "description": "Rotate elements about a vertical axis through a plan point (mm) by an angle in degrees."
+    },
+    {
+      "name": "copy_elements",
+      "description": "Copy elements offset by a vector in mm. Returns the new element ids."
+    },
+    {
+      "name": "delete_elements",
+      "description": "Delete elements (and anything that depends on them). Returns all ids that were removed."
+    },
+    {
+      "name": "select_elements",
+      "description": "Set the selection in the Revit UI and optionally zoom the active view to it."
+    },
+    {
+      "name": "color_elements",
+      "description": "Override element colors in a view (default: active view) to highlight them. Pass reset=true to clear overrides."
+    },
+    {
+      "name": "create_sheet",
+      "description": "Create a sheet with a title block and optionally place views on it."
+    }
+  ],
+  "keywords": [
+    "revit",
+    "bim",
+    "autodesk",
+    "architecture",
+    "aec",
+    "building",
+    "cad"
+  ],
+  "license": "MIT",
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": [
+      "win32"
+    ],
+    "runtimes": {
+      "node": ">=18.0.0"
+    }
+  },
+  "user_config": {
+    "port": {
+      "type": "number",
+      "title": "Bridge port",
+      "description": "Port the RevitMcp add-in listens on. Change it only if you set REVIT_MCP_PORT for Revit too.",
+      "default": 48884,
+      "min": 1024,
+      "max": 65535,
+      "required": false
+    },
+    "token": {
+      "type": "string",
+      "title": "Shared token (optional)",
+      "description": "Only needed if you set the REVIT_MCP_TOKEN environment variable for Revit. Must match it.",
+      "default": "",
+      "sensitive": true,
+      "required": false
+    },
+    "timeout_ms": {
+      "type": "number",
+      "title": "Request timeout (ms)",
+      "description": "How long to wait for Revit to answer. Revit only answers when it is idle.",
+      "default": 60000,
+      "min": 5000,
+      "max": 600000,
+      "required": false
+    }
+  }
+}

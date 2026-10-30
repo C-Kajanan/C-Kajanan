@@ -1,0 +1,13 @@
+{
+  "name": "revit",
+  "version": "0.1.0",
+  "description": "Work with the Autodesk Revit model you have open: query elements, edit parameters, model walls, floors, rooms and families, make sheets and see views. Needs the RevitMcp add-in installed in Revit.",
+  "author": {
+    "name": "C-Kajanan",
+    "url": "https://github.com/C-Kajanan"
+  },
+  "homepage": "https://github.com/C-Kajanan/C-Kajanan/tree/main/revit-mcp",
+  "repository": "https://github.com/C-Kajanan/C-Kajanan",
+  "license": "MIT",
+  "keywords": ["revit", "bim", "autodesk", "architecture", "mcp"]
+}

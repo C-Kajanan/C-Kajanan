@@ -44,6 +44,25 @@ npm run build
 
 ### Connect your MCP client
 
+**Claude Desktop extension (one click).** Download `revit-mcp-<version>.mcpb` and double-click it, or drag it into Claude Desktop → Settings → Extensions. Optional settings (port, token, timeout) appear in the install dialog. To build it yourself, run `mcpb/build-mcpb.sh`. The bundle also sends Claude a short guide to using the tools well, the same guidance as the `revit` skill.
+
+**Claude Code plugin.** The plugin adds the MCP server plus a `revit` skill that teaches Claude how to use the tools well: millimetre units, looking up type names before placing, confirming before deleting, and verifying with screenshots. It runs a prebuilt, single-file server (`server/dist/revit-mcp.mjs`), so you only need Node.js. There's no npm install or build step.
+
+```
+/plugin install revit --marketplace C-Kajanan/c-kajanan
+```
+
+On Claude Code versions older than 2.1.275, add the marketplace first:
+
+```
+/plugin marketplace add C-Kajanan/C-Kajanan
+/plugin install revit@c-kajanan
+```
+
+You still need the Revit add-in installed (see above). The skill's source is in [`skills/revit/`](skills/revit/SKILL.md).
+
+**Other MCP clients**, or Claude Code without the plugin:
+
 Claude Desktop (`%APPDATA%\Claude\claude_desktop_config.json`):
 
 ```json
@@ -138,7 +157,7 @@ cd addin && dotnet build -p:RevitVersion=2026
 
 The add-in compiles on any OS against the [Nice3point.Revit.Api](https://github.com/Nice3point/RevitApi) reference packages. Running it needs Revit on Windows.
 
-To add a tool, write a static method `object Name(CommandContext c)` with `[McpCommand("tool_name")]` in `addin/Commands/`, and add a matching entry to `server/src/tools.ts`.
+To add a tool, write a static method `object Name(CommandContext c)` with `[McpCommand("tool_name")]` in `addin/Commands/`, and add a matching entry to `server/src/tools.ts`. To build the all-in-one release zip, run `package/build-package.sh`. It produces the add-in for every Revit version, the bundled server, the plugin, the skill, the Windows installer, and the source. After any change to the server, run `npm run bundle` and commit `server/dist/revit-mcp.mjs`, because that bundled file is what the plugin runs. If the change affects how Claude should use the tools, update `skills/revit/SKILL.md` too.
 
 ## License
 
