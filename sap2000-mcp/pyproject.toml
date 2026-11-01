@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sap2000-mcp"
+version = "0.1.0"
+description = "Model Context Protocol server for CSi SAP2000: build models, run analyses and read results from Claude or any MCP client."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "C-Kajanan" }]
+keywords = ["mcp", "sap2000", "csi", "structural-engineering", "fea", "claude"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: Microsoft :: Windows",
+  "Topic :: Scientific/Engineering",
+]
+dependencies = [
+  "mcp>=2.0,<3",
+  "pydantic>=2",
+  "comtypes>=1.4; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+sap2000-mcp = "sap2000_mcp.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/C-Kajanan/C-Kajanan/tree/main/sap2000-mcp"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sap2000_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
