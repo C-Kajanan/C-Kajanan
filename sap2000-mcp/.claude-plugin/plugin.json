@@ -1,0 +1,9 @@
+{
+  "name": "sap2000",
+  "version": "0.1.0",
+  "description": "SAP2000 skill plus MCP server: build structural models, run analyses, read results and design ratios in CSi SAP2000.",
+  "author": { "name": "C-Kajanan" },
+  "homepage": "https://github.com/C-Kajanan/C-Kajanan/tree/main/sap2000-mcp",
+  "license": "MIT",
+  "keywords": ["sap2000", "csi", "structural", "fea", "mcp"]
+}

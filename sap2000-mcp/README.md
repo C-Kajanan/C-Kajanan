@@ -16,7 +16,29 @@ It uses the official SAP2000 API (OAPI) through COM, so no SAP2000 plug-in is ne
 
 Python and SAP2000 must both be 64-bit (the default for both).
 
-## Install
+## Install as one Claude Code plugin (recommended)
+
+This folder is also a Claude Code plugin named `sap2000`. One install gives you the MCP server **and** a `sap2000` skill that teaches Claude the SAP2000 workflow: units, sign conventions, load combinations, result sanity checks and how to report.
+
+You need [uv](https://docs.astral.sh/uv/getting-started/installation/) (`winget install astral-sh.uv`). The plugin uses it to install and start the server.
+
+```
+/plugin marketplace add C-Kajanan/C-Kajanan
+/plugin install sap2000@c-kajanan
+```
+
+Restart Claude Code, open SAP2000, and ask away. The skill loads by itself whenever you talk about SAP2000 or structural modelling, or you can type `/sap2000`.
+
+| Part | File |
+| --- | --- |
+| Skill | [`skills/sap2000/SKILL.md`](skills/sap2000/SKILL.md) |
+| MCP server config | [`.mcp.json`](.mcp.json) |
+| Plugin manifest | [`.claude-plugin/plugin.json`](.claude-plugin/plugin.json) |
+| Marketplace (repo root) | [`../.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json) |
+
+## Install the MCP server only
+
+Use this for Claude Desktop or other MCP clients.
 
 ```powershell
 git clone https://github.com/C-Kajanan/C-Kajanan.git
