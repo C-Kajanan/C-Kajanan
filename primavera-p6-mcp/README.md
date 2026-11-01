@@ -14,16 +14,24 @@ Try it on the sample project in [`examples/`](examples): two monthly updates of 
 
 ## Use it as a skill
 
-Everything is also packaged as one Agent Skill, [`skill/primavera-p6/`](skill/primavera-p6). It contains `SKILL.md`, a single bundled script `scripts/p6.mjs` with all the tools and no dependencies, reference notes and the sample XERs. It needs only Node.js 18+, with no MCP setup and no `npm install`.
+The XER analysis is also packaged as one Agent Skill, [`skill/primavera-p6/`](skill/primavera-p6). It contains:
+- `SKILL.md`
+- `scripts/p6.mjs`, a single readable script with no dependencies
+- `scripts/tools.json`, the argument definitions
+- reference notes and the sample XERs
 
-- **Claude.ai / Claude Desktop**: download [`skill/primavera-p6.zip`](skill/primavera-p6.zip) and upload it under **Settings → Capabilities → Skills**. Then attach an XER to a chat and ask about it.
-- **Claude Code**: copy the folder into your skills directory:
+You only need Node.js 18 or later. There's nothing to set up and no `npm install`.
+
+The skill is deliberately offline and read-only. It reads the XER files you name and prints JSON. It makes no network calls, reads no environment variables or credentials, runs no other programs and writes no files. Live P6 access stays in the MCP server.
+
+- **Claude.ai / Claude Desktop**: download [`skill/primavera-p6.zip`](skill/primavera-p6.zip), upload it under **Settings → Capabilities → Skills**, then attach an XER to a chat.
+- **Claude Code**:
   ```bash
   cp -r skill/primavera-p6 ~/.claude/skills/
   ```
-  or into `.claude/skills/` of a project to share it with your team.
+  To share it with your team, copy it into the project's `.claude/skills/` folder instead.
 
-The script works on its own too:
+The script also works on its own:
 
 ```bash
 node skill/primavera-p6/scripts/p6.mjs list
@@ -31,9 +39,7 @@ node skill/primavera-p6/scripts/p6.mjs xer_schedule_health --file my-schedule.xe
 node skill/primavera-p6/scripts/p6.mjs xer_compare --previousFile jan.xer --currentFile feb.xer
 ```
 
-For the live P6 tools, set the same `P6_*` environment variables as for the MCP server (see [Configuration](#configuration)). In a claude.ai sandbox the P6 server also has to be reachable from that sandbox's network, which an internal P6 server usually isn't. In that case, use the MCP server locally, or export XERs and upload them.
-
-Choose the MCP server when you want Claude to connect to P6 directly from your machine. Choose the skill when you mostly work from XER files or want a one-file install.
+Use the MCP server if you want Claude to connect to P6 itself. Use the skill if you work from XER files and want a one-file install with no network access.
 
 ## Install (MCP server)
 
@@ -171,11 +177,11 @@ XER files are read as Windows-1252 unless they are valid UTF-8. Parsed files are
 ```bash
 cd server
 npm install
-npm test            # builds, then runs unit tests on the sample XERs, CLI tests, and MCP tests against a mock P6 server
-npm run build:skill # rebuilds skill/primavera-p6/scripts/p6.mjs, references/tools.md and skill/primavera-p6.zip
+npm test            # builds, then runs unit tests on the sample XERs, CLI and skill tests, and MCP tests against a mock P6 server
+npm run build:skill # rebuilds skill/primavera-p6/scripts/{p6.mjs,tools.json}, references/tools.md and skill/primavera-p6.zip
 ```
 
-Run `npm run build:skill` after changing a tool so the skill stays in step with the MCP server.
+Run `npm run build:skill` after changing an XER tool. A test fails if the committed skill files are out of date.
 
 The REST client follows Oracle's [P6 EPPM REST API](https://docs.oracle.com/cd/G18294_01/English/Integration_Documentation/rest_api/D99665.html) reference (release 25). To add a tool, add an entry to `server/src/tools/xerTools.ts` or `server/src/tools/p6Tools.ts`.
 

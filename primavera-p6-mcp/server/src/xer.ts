@@ -40,8 +40,8 @@ export function parseXer(text: string, path = "<memory>"): XerFile {
   const tables = new Map<string, Row[]>();
   let fields: string[] = [];
   let rows: Row[] | undefined;
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
+  for (let index = 1; index < lines.length; index++) {
+    const line = lines[index];
     if (!line) continue;
     const tag = line.slice(0, 2);
     const parts = line.split("\t");
@@ -50,10 +50,10 @@ export function parseXer(text: string, path = "<memory>"): XerFile {
       fields = [];
       tables.set(parts[1].trim(), rows);
     } else if (tag === "%F") {
-      fields = parts.slice(1).map((f) => f.trim());
+      fields = parts.slice(1).map((field) => field.trim());
     } else if (tag === "%R" && rows) {
       const row: Row = {};
-      for (let f = 0; f < fields.length; f++) row[fields[f]] = parts[f + 1] ?? "";
+      for (let col = 0; col < fields.length; col++) row[fields[col]] = parts[col + 1] ?? "";
       rows.push(row);
     } else if (tag === "%E") {
       break;
@@ -86,13 +86,13 @@ export function table(xer: XerFile, name: string): Row[] {
 /** XER dates look like "2024-03-18 08:00". Returns epoch ms or undefined. */
 export function parseDate(value: string | undefined): number | undefined {
   if (!value) return undefined;
-  const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/.exec(value.trim());
-  if (!m) return undefined;
-  return Date.UTC(+m[1], +m[2] - 1, +m[3], m[4] ? +m[4] : 0, m[5] ? +m[5] : 0);
+  const match = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+  if (!match) return undefined;
+  return Date.UTC(+match[1], +match[2] - 1, +match[3], match[4] ? +match[4] : 0, match[5] ? +match[5] : 0);
 }
 
 export function num(value: string | undefined): number | undefined {
   if (value === undefined || value === "") return undefined;
-  const n = Number(value);
-  return Number.isFinite(n) ? n : undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }

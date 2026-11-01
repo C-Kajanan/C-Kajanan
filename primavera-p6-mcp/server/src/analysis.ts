@@ -18,68 +18,68 @@ import {
 } from "./schedule.js";
 import { parseDate, table } from "./xer.js";
 
-const pct = (n: number, d: number) => (d === 0 ? 0 : round((n / d) * 100, 1));
-const byStart = (a: Activity, b: Activity) =>
-  (a.startMs ?? Infinity) - (b.startMs ?? Infinity) || (a.finishMs ?? Infinity) - (b.finishMs ?? Infinity) || a.id.localeCompare(b.id);
+const pct = (value: number, day: number) => (day === 0 ? 0 : round((value / day) * 100, 1));
+const byStart = (activity: Activity, other: Activity) =>
+  (activity.startMs ?? Infinity) - (other.startMs ?? Infinity) || (activity.finishMs ?? Infinity) - (other.finishMs ?? Infinity) || activity.id.localeCompare(other.id);
 
 /** Activity that finishes last; on a tie, prefer a finish milestone, then one without successors. */
 export function latestFinish(acts: Activity[]): Activity | undefined {
-  const rank = (a: Activity) => (a.type === "Finish Milestone" ? 2 : 0) + (a.succs.length === 0 ? 1 : 0);
+  const rank = (activity: Activity) => (activity.type === "Finish Milestone" ? 2 : 0) + (activity.succs.length === 0 ? 1 : 0);
   let best: Activity | undefined;
-  for (const a of acts) {
-    if (a.finishMs === undefined) continue;
-    if (!best || a.finishMs > best.finishMs! || (a.finishMs === best.finishMs && rank(a) > rank(best))) best = a;
+  for (const activity of acts) {
+    if (activity.finishMs === undefined) continue;
+    if (!best || activity.finishMs > best.finishMs! || (activity.finishMs === best.finishMs && rank(activity) > rank(best))) best = activity;
   }
   return best;
 }
 
 function earliestStart(acts: Activity[]): Activity | undefined {
   let best: Activity | undefined;
-  for (const a of acts) if (a.startMs !== undefined && (!best || a.startMs < best.startMs!)) best = a;
+  for (const activity of acts) if (activity.startMs !== undefined && (!best || activity.startMs < best.startMs!)) best = activity;
   return best;
 }
 
-export function summary(s: Schedule, criticalFloatDays = 0) {
-  const acts = s.activities;
-  const count = (f: (a: Activity) => boolean) => acts.filter(f).length;
+export function summary(schedule: Schedule, criticalFloatDays = 0) {
+  const acts = schedule.activities;
+  const count = (field: (activity: Activity) => boolean) => acts.filter(field).length;
   const byStatus: Record<string, number> = {};
   const byType: Record<string, number> = {};
-  for (const a of acts) {
-    byStatus[a.status] = (byStatus[a.status] ?? 0) + 1;
-    byType[a.type] = (byType[a.type] ?? 0) + 1;
+  for (const activity of acts) {
+    byStatus[activity.status] = (byStatus[activity.status] ?? 0) + 1;
+    byType[activity.type] = (byType[activity.type] ?? 0) + 1;
   }
-  const work = acts.filter((a) => !isSummaryType(a));
-  const totalOrig = work.reduce((n, a) => n + a.originalDurationDays, 0);
-  const earned = work.reduce((n, a) => n + a.originalDurationDays * (a.percentComplete / 100), 0);
+  const work = acts.filter((activity) => !isSummaryType(activity));
+  const totalOrig = work.reduce((value, activity) => value + activity.originalDurationDays, 0);
+  const earned = work.reduce((value, activity) => value + activity.originalDurationDays * (activity.percentComplete / 100), 0);
   const finishAct = latestFinish(acts);
   const startAct = earliestStart(acts);
-  const cost = acts.flatMap((a) => a.assignments).reduce(
-    (t, r) => ({ planned: t.planned + r.plannedCost, actual: t.actual + r.actualCost, remaining: t.remaining + r.remainingCost }),
+  const cost = acts.flatMap((activity) => activity.assignments).reduce(
+    (item, assignment) => ({ planned: item.planned + assignment.plannedCost, actual: item.actual + assignment.actualCost, remaining: item.remaining + assignment.remainingCost }),
     { planned: 0, actual: 0, remaining: 0 },
   );
   return {
-    file: s.xer.path,
-    p6Version: s.xer.version,
-    exportDate: s.xer.exportDate,
-    project: { code: s.projectCode, name: s.projectName },
-    dataDate: s.dataDate,
-    plannedStart: s.plannedStart,
-    mustFinishBy: s.mustFinishBy,
-    scheduledFinish: s.scheduledFinish,
+    file: schedule.xer.path,
+    p6Version: schedule.xer.version,
+    exportDate: schedule.xer.exportDate,
+    project: { code: schedule.projectCode, name: schedule.projectName },
+    dataDate: schedule.dataDate,
+    plannedStart: schedule.plannedStart,
+    mustFinishBy: schedule.mustFinishBy,
+    scheduledFinish: schedule.scheduledFinish,
     start: startAct?.start,
     finish: finishAct?.finish,
     finishActivity: finishAct ? { id: finishAct.id, name: finishAct.name } : undefined,
     activities: acts.length,
-    relationships: s.relationships.length,
-    wbsElements: [...s.wbs.values()].filter((w) => !w.isProjectNode).length,
+    relationships: schedule.relationships.length,
+    wbsElements: [...schedule.wbs.values()].filter((node) => !node.isProjectNode).length,
     byStatus,
     byType,
     durationWeightedPercentComplete: pct(earned, totalOrig),
-    critical: count((a) => !isComplete(a) && (a.totalFloatDays ?? Infinity) <= criticalFloatDays),
-    negativeFloat: count((a) => !isComplete(a) && (a.totalFloatDays ?? 0) < 0),
-    longestPath: count((a) => a.longestPath),
-    resourceAssignments: acts.reduce((n, a) => n + a.assignments.length, 0),
-    cost: s.hasResources ? { planned: round(cost.planned), actual: round(cost.actual), remaining: round(cost.remaining) } : undefined,
+    critical: count((activity) => !isComplete(activity) && (activity.totalFloatDays ?? Infinity) <= criticalFloatDays),
+    negativeFloat: count((activity) => !isComplete(activity) && (activity.totalFloatDays ?? 0) < 0),
+    longestPath: count((activity) => activity.longestPath),
+    resourceAssignments: acts.reduce((value, activity) => value + activity.assignments.length, 0),
+    cost: schedule.hasResources ? { planned: round(cost.planned), actual: round(cost.actual), remaining: round(cost.remaining) } : undefined,
   };
 }
 
@@ -97,44 +97,44 @@ export interface ActivityFilter {
   resource?: string;
 }
 
-export function filterActivities(s: Schedule, f: ActivityFilter): Activity[] {
-  const startsAfter = parseDate(f.startsAfter);
-  const finishesBefore = parseDate(f.finishesBefore);
-  const search = f.search?.toLowerCase();
-  const wbs = f.wbs?.toLowerCase();
-  const resource = f.resource?.toLowerCase();
-  const types = f.types?.map((t) => t.toLowerCase());
-  return s.activities
-    .filter((a) => {
-      if (f.status?.length && !f.status.includes(a.status as never)) return false;
-      if (types?.length && !types.some((t) => a.type.toLowerCase().includes(t))) return false;
-      if (wbs && !a.wbsCode.toLowerCase().startsWith(wbs) && !a.wbsPath.toLowerCase().includes(wbs)) return false;
-      if (search && !a.id.toLowerCase().includes(search) && !a.name.toLowerCase().includes(search)) return false;
-      if (f.maxFloat !== undefined && !((a.totalFloatDays ?? Infinity) <= f.maxFloat)) return false;
-      if (f.minFloat !== undefined && !((a.totalFloatDays ?? -Infinity) >= f.minFloat)) return false;
-      if (f.longestPathOnly && !a.longestPath) return false;
-      if (startsAfter !== undefined && !((a.startMs ?? -Infinity) >= startsAfter)) return false;
-      if (finishesBefore !== undefined && !((a.finishMs ?? Infinity) <= finishesBefore)) return false;
-      if (f.hasConstraint !== undefined && Boolean(a.constraintCode) !== f.hasConstraint) return false;
-      if (resource && !a.assignments.some((r) => r.resourceId.toLowerCase().includes(resource) || r.resourceName.toLowerCase().includes(resource)))
+export function filterActivities(schedule: Schedule, field: ActivityFilter): Activity[] {
+  const startsAfter = parseDate(field.startsAfter);
+  const finishesBefore = parseDate(field.finishesBefore);
+  const search = field.search?.toLowerCase();
+  const wbs = field.wbs?.toLowerCase();
+  const resource = field.resource?.toLowerCase();
+  const types = field.types?.map((item) => item.toLowerCase());
+  return schedule.activities
+    .filter((activity) => {
+      if (field.status?.length && !field.status.includes(activity.status as never)) return false;
+      if (types?.length && !types.some((item) => activity.type.toLowerCase().includes(item))) return false;
+      if (wbs && !activity.wbsCode.toLowerCase().startsWith(wbs) && !activity.wbsPath.toLowerCase().includes(wbs)) return false;
+      if (search && !activity.id.toLowerCase().includes(search) && !activity.name.toLowerCase().includes(search)) return false;
+      if (field.maxFloat !== undefined && !((activity.totalFloatDays ?? Infinity) <= field.maxFloat)) return false;
+      if (field.minFloat !== undefined && !((activity.totalFloatDays ?? -Infinity) >= field.minFloat)) return false;
+      if (field.longestPathOnly && !activity.longestPath) return false;
+      if (startsAfter !== undefined && !((activity.startMs ?? -Infinity) >= startsAfter)) return false;
+      if (finishesBefore !== undefined && !((activity.finishMs ?? Infinity) <= finishesBefore)) return false;
+      if (field.hasConstraint !== undefined && Boolean(activity.constraintCode) !== field.hasConstraint) return false;
+      if (resource && !activity.assignments.some((assignment) => assignment.resourceId.toLowerCase().includes(resource) || assignment.resourceName.toLowerCase().includes(resource)))
         return false;
       return true;
     })
     .sort(byStart);
 }
 
-export function criticalPath(s: Schedule, floatThreshold = 0, includeCompleted = false) {
-  const acts = s.activities
-    .filter((a) => (includeCompleted || !isComplete(a)) && !isSummaryType(a))
-    .filter((a) => (a.totalFloatDays ?? Infinity) <= floatThreshold || (floatThreshold <= 0 && a.longestPath && !isComplete(a)))
+export function criticalPath(schedule: Schedule, floatThreshold = 0, includeCompleted = false) {
+  const acts = schedule.activities
+    .filter((activity) => (includeCompleted || !isComplete(activity)) && !isSummaryType(activity))
+    .filter((activity) => (activity.totalFloatDays ?? Infinity) <= floatThreshold || (floatThreshold <= 0 && activity.longestPath && !isComplete(activity)))
     .sort(byStart);
   return {
-    project: s.projectCode,
-    dataDate: s.dataDate,
+    project: schedule.projectCode,
+    dataDate: schedule.dataDate,
     floatThreshold,
     count: acts.length,
     note: "Activities whose total float is at or below the threshold, plus those P6 flagged as on the longest path, ordered by start.",
-    activities: acts.map((a) => ({ ...brief(a), onLongestPath: a.longestPath })),
+    activities: acts.map((activity) => ({ ...brief(activity), onLongestPath: activity.longestPath })),
   };
 }
 
@@ -159,27 +159,27 @@ function workPos(ms: number, workDaysPerWeek: number): number {
  * successor's dependent date. The predecessor with the smallest gap is the one
  * driving the successor; 0 means it drives exactly.
  */
-function relGap(r: Relationship): number | undefined {
-  const { pred, succ } = r;
-  const base = r.type === "SS" || r.type === "SF" ? pred.startMs : pred.finishMs;
-  const target = r.type === "FF" || r.type === "SF" ? succ.finishMs : succ.startMs;
+function relGap(rel: Relationship): number | undefined {
+  const { pred, succ } = rel;
+  const base = rel.type === "SS" || rel.type === "SF" ? pred.startMs : pred.finishMs;
+  const target = rel.type === "FF" || rel.type === "SF" ? succ.finishMs : succ.startMs;
   if (base === undefined || target === undefined) return undefined;
   const wd = succ.workDaysPerWeek;
-  return workPos(target, wd) - workPos(base, wd) - r.lagDays;
+  return workPos(target, wd) - workPos(base, wd) - rel.lagDays;
 }
 
-export function drivingPath(s: Schedule, target: Activity, maxSteps = 500) {
+export function drivingPath(schedule: Schedule, target: Activity, maxSteps = 500) {
   const path: { activity: Activity; via?: Relationship; gap?: number }[] = [{ activity: target }];
   const seen = new Set([target.taskId]);
   let current = target;
-  for (let i = 0; i < maxSteps; i++) {
+  for (let index = 0; index < maxSteps; index++) {
     if (isComplete(current) || current.actualStart) break; // driven by the data date from here
     let best: { r: Relationship; gap: number } | undefined;
-    for (const r of current.preds) {
-      if (seen.has(r.pred.taskId)) continue;
-      const gap = relGap(r);
+    for (const rel of current.preds) {
+      if (seen.has(rel.pred.taskId)) continue;
+      const gap = relGap(rel);
       if (gap === undefined) continue;
-      if (!best || gap < best.gap) best = { r, gap };
+      if (!best || gap < best.gap) best = { r: rel, gap };
     }
     if (!best) break;
     path[path.length - 1].via = best.r;
@@ -194,91 +194,91 @@ export function drivingPath(s: Schedule, target: Activity, maxSteps = 500) {
     note: "Traced backwards by picking, at each step, the predecessor whose relationship leaves the smallest gap in working days. A gap of 0 means the predecessor drives the successor exactly; a gap of 1 can be a holiday. The trace stops at an activity that has started or has no predecessors.",
     path: path
       .reverse()
-      .map(({ activity: a, via, gap }) => ({ ...brief(a), drives: via ? { successor: via.succ.id, type: via.type, lag: via.lagDays, gapDays: gap } : undefined })),
+      .map(({ activity: activity, via, gap }) => ({ ...brief(activity), drives: via ? { successor: via.succ.id, type: via.type, lag: via.lagDays, gapDays: gap } : undefined })),
   };
 }
 
-export function lookahead(s: Schedule, days: number, from?: string) {
-  const fromMs = parseDate(from) ?? s.dataDateMs ?? Date.now();
+export function lookahead(schedule: Schedule, days: number, from?: string) {
+  const fromMs = parseDate(from) ?? schedule.dataDateMs ?? Date.now();
   const toMs = fromMs + days * DAY;
-  const acts = s.activities
-    .filter((a) => !isComplete(a) && !isSummaryType(a))
-    .filter((a) => (a.startMs ?? Infinity) < toMs && (a.finishMs ?? -Infinity) >= fromMs)
+  const acts = schedule.activities
+    .filter((activity) => !isComplete(activity) && !isSummaryType(activity))
+    .filter((activity) => (activity.startMs ?? Infinity) < toMs && (activity.finishMs ?? -Infinity) >= fromMs)
     .sort(byStart);
   const fmt = (ms: number) => new Date(ms).toISOString().slice(0, 10);
   return {
-    project: s.projectCode,
+    project: schedule.projectCode,
     window: { from: fmt(fromMs), to: fmt(toMs), days },
-    starting: acts.filter((a) => !a.actualStart && (a.startMs ?? Infinity) >= fromMs).length,
-    inProgress: acts.filter((a) => a.actualStart).length,
-    finishing: acts.filter((a) => (a.finishMs ?? Infinity) < toMs).length,
-    activities: acts.map((a) => ({ ...brief(a), resources: a.assignments.map((r) => r.resourceId) })),
+    starting: acts.filter((activity) => !activity.actualStart && (activity.startMs ?? Infinity) >= fromMs).length,
+    inProgress: acts.filter((activity) => activity.actualStart).length,
+    finishing: acts.filter((activity) => (activity.finishMs ?? Infinity) < toMs).length,
+    activities: acts.map((activity) => ({ ...brief(activity), resources: activity.assignments.map((assignment) => assignment.resourceId) })),
   };
 }
 
-export function wbsTree(s: Schedule, maxDepth = 10) {
+export function wbsTree(schedule: Schedule, maxDepth = 10) {
   const children = new Map<string, string[]>();
-  for (const w of s.wbs.values()) {
-    if (!children.has(w.parentId)) children.set(w.parentId, []);
-    children.get(w.parentId)!.push(w.wbsId);
+  for (const node of schedule.wbs.values()) {
+    if (!children.has(node.parentId)) children.set(node.parentId, []);
+    children.get(node.parentId)!.push(node.wbsId);
   }
   const actsByWbs = new Map<string, Activity[]>();
-  for (const a of s.activities) {
-    if (!actsByWbs.has(a.wbsId)) actsByWbs.set(a.wbsId, []);
-    actsByWbs.get(a.wbsId)!.push(a);
+  for (const activity of schedule.activities) {
+    if (!actsByWbs.has(activity.wbsId)) actsByWbs.set(activity.wbsId, []);
+    actsByWbs.get(activity.wbsId)!.push(activity);
   }
   type Node = { code: string; name: string; activities: number; start?: string; finish?: string; minFloat?: number; children?: Node[] };
   const all = (id: string): Activity[] => [...(actsByWbs.get(id) ?? []), ...(children.get(id) ?? []).flatMap(all)];
   const build = (id: string, depth: number): Node => {
-    const w = s.wbs.get(id)!;
+    const node = schedule.wbs.get(id)!;
     const acts = all(id);
-    const floats = acts.filter((a) => !isComplete(a) && a.totalFloatDays !== undefined).map((a) => a.totalFloatDays!);
-    const kids = (children.get(id) ?? []).map((k) => s.wbs.get(k)!).sort((a, b) => a.seq - b.seq || a.code.localeCompare(b.code));
+    const floats = acts.filter((activity) => !isComplete(activity) && activity.totalFloatDays !== undefined).map((activity) => activity.totalFloatDays!);
+    const kids = (children.get(id) ?? []).map((key) => schedule.wbs.get(key)!).sort((wbsNode, child) => wbsNode.seq - child.seq || wbsNode.code.localeCompare(child.code));
     return {
-      code: w.isProjectNode ? s.projectCode : w.path,
-      name: w.name,
+      code: node.isProjectNode ? schedule.projectCode : node.path,
+      name: node.name,
       activities: acts.length,
       start: earliestStart(acts)?.start,
       finish: latestFinish(acts)?.finish,
       minFloat: floats.length ? Math.min(...floats) : undefined,
-      children: depth < maxDepth && kids.length ? kids.map((k) => build(k.wbsId, depth + 1)) : undefined,
+      children: depth < maxDepth && kids.length ? kids.map((wbsNode) => build(wbsNode.wbsId, depth + 1)) : undefined,
     };
   };
-  const root = [...s.wbs.values()].find((w) => w.isProjectNode);
+  const root = [...schedule.wbs.values()].find((node) => node.isProjectNode);
   if (root) return build(root.wbsId, 0);
-  return { code: s.projectCode, name: s.projectName, children: [...s.wbs.values()].filter((w) => !s.wbs.has(w.parentId)).map((w) => build(w.wbsId, 1)) };
+  return { code: schedule.projectCode, name: schedule.projectName, children: [...schedule.wbs.values()].filter((node) => !schedule.wbs.has(node.parentId)).map((node) => build(node.wbsId, 1)) };
 }
 
-export function resourceSummary(s: Schedule) {
+export function resourceSummary(schedule: Schedule) {
   const totals = new Map<string, { id: string; name: string; type: string; activities: number; planned: number; actual: number; remaining: number; plannedCost: number; actualCost: number; remainingCost: number }>();
-  for (const a of s.activities)
-    for (const r of a.assignments) {
-      const t = totals.get(r.resourceId) ?? { id: r.resourceId, name: r.resourceName, type: r.resourceType, activities: 0, planned: 0, actual: 0, remaining: 0, plannedCost: 0, actualCost: 0, remainingCost: 0 };
-      t.activities++;
-      t.planned += r.plannedUnits;
-      t.actual += r.actualUnits;
-      t.remaining += r.remainingUnits;
-      t.plannedCost += r.plannedCost;
-      t.actualCost += r.actualCost;
-      t.remainingCost += r.remainingCost;
-      totals.set(r.resourceId, t);
+  for (const activity of schedule.activities)
+    for (const assignment of activity.assignments) {
+      const item = totals.get(assignment.resourceId) ?? { id: assignment.resourceId, name: assignment.resourceName, type: assignment.resourceType, activities: 0, planned: 0, actual: 0, remaining: 0, plannedCost: 0, actualCost: 0, remainingCost: 0 };
+      item.activities++;
+      item.planned += assignment.plannedUnits;
+      item.actual += assignment.actualUnits;
+      item.remaining += assignment.remainingUnits;
+      item.plannedCost += assignment.plannedCost;
+      item.actualCost += assignment.actualCost;
+      item.remainingCost += assignment.remainingCost;
+      totals.set(assignment.resourceId, item);
     }
-  const list = [...totals.values()].map((t) => ({
-    ...t,
-    planned: round(t.planned),
-    actual: round(t.actual),
-    remaining: round(t.remaining),
-    plannedCost: round(t.plannedCost),
-    actualCost: round(t.actualCost),
-    remainingCost: round(t.remainingCost),
+  const list = [...totals.values()].map((item) => ({
+    ...item,
+    planned: round(item.planned),
+    actual: round(item.actual),
+    remaining: round(item.remaining),
+    plannedCost: round(item.plannedCost),
+    actualCost: round(item.actualCost),
+    remainingCost: round(item.remainingCost),
   }));
   return {
-    project: s.projectCode,
+    project: schedule.projectCode,
     note: "Units are hours for labor and nonlabor resources and the resource's unit of measure for material.",
-    resources: list.sort((a, b) => b.planned - a.planned),
-    unassignedResources: table(s.xer, "RSRC")
-      .filter((r) => !totals.has(r.rsrc_short_name))
-      .map((r) => r.rsrc_short_name),
+    resources: list.sort((first, second) => second.planned - first.planned),
+    unassignedResources: table(schedule.xer, "RSRC")
+      .filter((row) => !totals.has(row.rsrc_short_name))
+      .map((row) => row.rsrc_short_name),
   };
 }
 
@@ -297,21 +297,21 @@ export interface Check {
   note?: string;
 }
 
-const ids = (acts: Activity[], max = 25) => acts.slice(0, max).map((a) => `${a.id} ${a.name}`);
-const relIds = (rels: Relationship[], max = 25) => rels.slice(0, max).map((r) => `${r.pred.id} -> ${r.succ.id} ${r.type} lag ${r.lagDays}d`);
+const ids = (acts: Activity[], max = 25) => acts.slice(0, max).map((activity) => `${activity.id} ${activity.name}`);
+const relIds = (rels: Relationship[], max = 25) => rels.slice(0, max).map((rel) => `${rel.pred.id} -> ${rel.succ.id} ${rel.type} lag ${rel.lagDays}d`);
 
 /**
  * DCMA 14-point assessment. Planned (target) dates stand in for the baseline
  * unless a baseline schedule is given, in which case activities are matched
  * by activity ID.
  */
-export function dcmaCheck(s: Schedule, baseline?: Schedule) {
-  const dd = s.dataDateMs;
-  const incomplete = s.activities.filter((a) => !isComplete(a) && !isSummaryType(a));
-  const tasks = incomplete.filter((a) => !isMilestone(a));
-  const rels = s.relationships.filter((r) => !isComplete(r.succ) && !isSummaryType(r.succ) && !isSummaryType(r.pred));
+export function dcmaCheck(schedule: Schedule, baseline?: Schedule) {
+  const dd = schedule.dataDateMs;
+  const incomplete = schedule.activities.filter((activity) => !isComplete(activity) && !isSummaryType(activity));
+  const tasks = incomplete.filter((activity) => !isMilestone(activity));
+  const rels = schedule.relationships.filter((rel) => !isComplete(rel.succ) && !isSummaryType(rel.succ) && !isSummaryType(rel.pred));
   const checks: Check[] = [];
-  const add = (c: Check) => checks.push(c);
+  const add = (check: Check) => checks.push(check);
   const ratio = (id: number, name: string, items: Activity[], of: number, limit: number, note?: string, cmp: "max" | "min" = "max") => {
     const value = pct(items.length, of);
     add({
@@ -329,16 +329,16 @@ export function dcmaCheck(s: Schedule, baseline?: Schedule) {
   };
 
   // 1 Logic
-  const noPred = incomplete.filter((a) => a.preds.length === 0);
-  const noSucc = incomplete.filter((a) => a.succs.length === 0);
+  const noPred = incomplete.filter((activity) => activity.preds.length === 0);
+  const noSucc = incomplete.filter((activity) => activity.succs.length === 0);
   const openEnds = [...new Set([...noPred, ...noSucc])];
   ratio(1, "Logic (missing predecessors or successors)", openEnds, incomplete.length, 5,
     `${noPred.length} without predecessors, ${noSucc.length} without successors. The project start and finish milestones are expected to show up here.`);
 
   // 2 Leads, 3 Lags, 4 Relationship types
-  const leads = rels.filter((r) => r.lagDays < 0);
-  const lags = rels.filter((r) => r.lagDays > 0);
-  const fs = rels.filter((r) => r.type === "FS");
+  const leads = rels.filter((rel) => rel.lagDays < 0);
+  const lags = rels.filter((rel) => rel.lagDays > 0);
+  const fs = rels.filter((rel) => rel.type === "FS");
   const relCheck = (id: number, name: string, items: Relationship[], limit: number, cmp: "max" | "min", note?: string) => {
     const value = pct(items.length, rels.length);
     add({
@@ -350,7 +350,7 @@ export function dcmaCheck(s: Schedule, baseline?: Schedule) {
       pass: rels.length === 0 ? null : cmp === "max" ? value <= limit : value >= limit,
       count: items.length,
       of: rels.length,
-      examples: cmp === "max" ? relIds(items) : relIds(rels.filter((r) => r.type !== "FS")),
+      examples: cmp === "max" ? relIds(items) : relIds(rels.filter((rel) => rel.type !== "FS")),
       note,
     });
   };
@@ -359,53 +359,53 @@ export function dcmaCheck(s: Schedule, baseline?: Schedule) {
   relCheck(4, "Relationship types (finish-to-start)", fs, 90, "min", "Examples list the non-FS relationships.");
 
   // 5 Hard constraints
-  const hard = incomplete.filter((a) => HARD_CONSTRAINTS.has(a.constraintCode ?? "") || HARD_CONSTRAINTS.has(a.secondaryConstraintCode ?? ""));
+  const hard = incomplete.filter((activity) => HARD_CONSTRAINTS.has(activity.constraintCode ?? "") || HARD_CONSTRAINTS.has(activity.secondaryConstraintCode ?? ""));
   ratio(5, "Hard constraints", hard, incomplete.length, 5, "Start On, Finish On, Start/Finish On or Before, Mandatory Start and Mandatory Finish.");
 
   // 6 High float, 7 Negative float
-  ratio(6, "High float (total float > 44 days)", incomplete.filter((a) => (a.totalFloatDays ?? 0) > 44), incomplete.length, 5);
-  ratio(7, "Negative float", incomplete.filter((a) => (a.totalFloatDays ?? 0) < 0), incomplete.length, 0);
+  ratio(6, "High float (total float > 44 days)", incomplete.filter((activity) => (activity.totalFloatDays ?? 0) > 44), incomplete.length, 5);
+  ratio(7, "Negative float", incomplete.filter((activity) => (activity.totalFloatDays ?? 0) < 0), incomplete.length, 0);
 
   // 8 High duration
-  ratio(8, "High duration (original duration > 44 days)", tasks.filter((a) => a.originalDurationDays > 44), tasks.length, 5, "Milestones excluded.");
+  ratio(8, "High duration (original duration > 44 days)", tasks.filter((activity) => activity.originalDurationDays > 44), tasks.length, 5, "Milestones excluded.");
 
   // 9 Invalid dates
   if (dd === undefined) {
     add({ id: 9, name: "Invalid dates", metric: "count", threshold: "0", value: null, pass: null, note: "The project has no data date." });
   } else {
-    const invalid = s.activities.filter((a) => {
-      const as = parseDate(a.actualStart);
-      const af = parseDate(a.actualFinish);
+    const invalid = schedule.activities.filter((activity) => {
+      const as = parseDate(activity.actualStart);
+      const af = parseDate(activity.actualFinish);
       if ((as !== undefined && as > dd) || (af !== undefined && af > dd)) return true;
-      if (isComplete(a)) return false;
-      if (!a.actualStart && (parseDate(a.earlyStart) ?? Infinity) < dd) return true;
-      return (parseDate(a.earlyFinish) ?? Infinity) < dd;
+      if (isComplete(activity)) return false;
+      if (!activity.actualStart && (parseDate(activity.earlyStart) ?? Infinity) < dd) return true;
+      return (parseDate(activity.earlyFinish) ?? Infinity) < dd;
     });
-    add({ id: 9, name: "Invalid dates", metric: "count", threshold: "0", value: invalid.length, pass: invalid.length === 0, count: invalid.length, of: s.activities.length, examples: ids(invalid),
+    add({ id: 9, name: "Invalid dates", metric: "count", threshold: "0", value: invalid.length, pass: invalid.length === 0, count: invalid.length, of: schedule.activities.length, examples: ids(invalid),
       note: "Actual dates after the data date, or forecast dates before it." });
   }
 
   // 10 Resources
-  if (!s.hasResources) {
+  if (!schedule.hasResources) {
     add({ id: 10, name: "Resources", metric: "% of activities", threshold: "0%", value: null, pass: null, note: "The schedule has no resource assignments, so this check doesn't apply." });
   } else {
-    ratio(10, "Resources (activities with duration but no resources)", tasks.filter((a) => a.originalDurationDays > 0 && a.assignments.length === 0), tasks.length, 0);
+    ratio(10, "Resources (activities with duration but no resources)", tasks.filter((activity) => activity.originalDurationDays > 0 && activity.assignments.length === 0), tasks.length, 0);
   }
 
   // 11 Missed tasks, 14 BEI
-  const baseFinish = (a: Activity): number | undefined => {
-    if (!baseline) return parseDate(a.plannedFinish);
-    const b = baseline.byId.get(a.id);
-    return b?.finishMs;
+  const baseFinish = (activity: Activity): number | undefined => {
+    if (!baseline) return parseDate(activity.plannedFinish);
+    const other = baseline.byId.get(activity.id);
+    return other?.finishMs;
   };
   const baseSource = baseline ? `baseline ${baseline.xer.path}` : "planned (target) dates, because no baseline was given";
   if (dd === undefined) {
     add({ id: 11, name: "Missed tasks", metric: "%", threshold: "<= 5%", value: null, pass: null, note: "The project has no data date." });
     add({ id: 14, name: "Baseline Execution Index (BEI)", metric: "ratio", threshold: ">= 0.95", value: null, pass: null, note: "The project has no data date." });
   } else {
-    const work = s.activities.filter((a) => !isSummaryType(a));
-    const dueByNow = work.filter((a) => (baseFinish(a) ?? Infinity) <= dd);
-    const missed = dueByNow.filter((a) => !isComplete(a) || (parseDate(a.actualFinish) ?? Infinity) > baseFinish(a)!);
+    const work = schedule.activities.filter((activity) => !isSummaryType(activity));
+    const dueByNow = work.filter((activity) => (baseFinish(activity) ?? Infinity) <= dd);
+    const missed = dueByNow.filter((activity) => !isComplete(activity) || (parseDate(activity.actualFinish) ?? Infinity) > baseFinish(activity)!);
     ratio(11, "Missed tasks", missed, dueByNow.length, 5, `Compared with ${baseSource}.`);
     const completed = work.filter(isComplete).length;
     const bei = dueByNow.length === 0 ? null : round(completed / dueByNow.length, 2);
@@ -419,11 +419,11 @@ export function dcmaCheck(s: Schedule, baseline?: Schedule) {
     add({ id: 12, name: "Critical path test", metric: "pass/fail", threshold: "continuous path", value: null, pass: null, note: "No incomplete activities." });
     add({ id: 13, name: "Critical Path Length Index (CPLI)", metric: "ratio", threshold: ">= 0.95", value: null, pass: null, note: "No incomplete activities." });
   } else {
-    const trace = drivingPath(s, finishAct);
+    const trace = drivingPath(schedule, finishAct);
     const first = trace.path[0];
-    const firstAct = s.byId.get(first.id)!;
+    const firstAct = schedule.byId.get(first.id)!;
     const reachesStart = Boolean(firstAct.actualStart) || firstAct.preds.length === 0 && (dd === undefined || (firstAct.startMs ?? Infinity) - dd <= DAY);
-    const breaks = trace.path.filter((p) => p.drives && Math.abs(p.drives.gapDays ?? 0) > 1);
+    const breaks = trace.path.filter((part) => part.drives && Math.abs(part.drives.gapDays ?? 0) > 1);
     add({
       id: 12,
       name: "Critical path test",
@@ -431,8 +431,8 @@ export function dcmaCheck(s: Schedule, baseline?: Schedule) {
       threshold: "continuous path",
       value: `${trace.steps} activities, ${breaks.length} gaps over 1 day`,
       pass: reachesStart && breaks.length === 0,
-      examples: trace.path.map((p) => `${p.id} ${p.name}${p.drives ? ` -(${p.drives.type}, gap ${p.drives.gapDays}d)->` : ""}`).slice(0, 40),
-      note: "Approximation from exported dates: DCMA's version of this test delays a critical activity and checks that the finish moves by the same amount, which needs P6 to reschedule. Use p6_schedule_project for that.",
+      examples: trace.path.map((part) => `${part.id} ${part.name}${part.drives ? ` -(${part.drives.type}, gap ${part.drives.gapDays}d)->` : ""}`).slice(0, 40),
+      note: "Approximation from exported dates: DCMA's version of this test delays a critical activity and checks that the finish moves by the same amount, which needs P6 to reschedule. Rescheduling in P6 (or p6_schedule_project in the MCP server) gives the exact result.",
     });
     if (dd === undefined || finishAct.finishMs === undefined) {
       add({ id: 13, name: "Critical Path Length Index (CPLI)", metric: "ratio", threshold: ">= 0.95", value: null, pass: null, note: "The project has no data date." });
@@ -445,13 +445,13 @@ export function dcmaCheck(s: Schedule, baseline?: Schedule) {
     }
   }
 
-  checks.sort((a, b) => a.id - b.id);
-  const scored = checks.filter((c) => c.pass !== null);
+  checks.sort((check, second) => check.id - second.id);
+  const scored = checks.filter((check) => check.pass !== null);
   return {
-    project: s.projectCode,
-    dataDate: s.dataDate,
-    passed: scored.filter((c) => c.pass).length,
-    failed: scored.filter((c) => !c.pass).length,
+    project: schedule.projectCode,
+    dataDate: schedule.dataDate,
+    passed: scored.filter((check) => check.pass).length,
+    failed: scored.filter((check) => !check.pass).length,
     notApplicable: checks.length - scored.length,
     incompleteActivities: incomplete.length,
     checks,
@@ -460,47 +460,47 @@ export function dcmaCheck(s: Schedule, baseline?: Schedule) {
 
 // ---------------------------------------------------------------- compare
 
-const daysBetween = (a?: number, b?: number) => (a === undefined || b === undefined ? undefined : round((b - a) / DAY, 1));
-const relKey = (r: Relationship) => `${r.pred.id}|${r.succ.id}|${r.type}`;
+const daysBetween = (first?: number, second?: number) => (first === undefined || second === undefined ? undefined : round((second - first) / DAY, 1));
+const relKey = (rel: Relationship) => `${rel.pred.id}|${rel.succ.id}|${rel.type}`;
 
 export function compareSchedules(prev: Schedule, curr: Schedule, limit = 100) {
-  const added = curr.activities.filter((a) => !prev.byId.has(a.id));
-  const removed = prev.activities.filter((a) => !curr.byId.has(a.id));
+  const added = curr.activities.filter((activity) => !prev.byId.has(activity.id));
+  const removed = prev.activities.filter((activity) => !curr.byId.has(activity.id));
   const changed: Record<string, unknown>[] = [];
-  for (const a of curr.activities) {
-    const b = prev.byId.get(a.id);
-    if (!b) continue;
+  for (const activity of curr.activities) {
+    const other = prev.byId.get(activity.id);
+    if (!other) continue;
     const diff: Record<string, unknown> = {};
-    if (a.name !== b.name) diff.name = { from: b.name, to: a.name };
-    if (a.status !== b.status) diff.status = { from: b.status, to: a.status };
-    if (a.originalDurationDays !== b.originalDurationDays) diff.originalDuration = { from: b.originalDurationDays, to: a.originalDurationDays };
-    if (a.constraintCode !== b.constraintCode || a.constraintDate !== b.constraintDate)
-      diff.constraint = { from: b.constraint ? `${b.constraint} ${b.constraintDate ?? ""}`.trim() : null, to: a.constraint ? `${a.constraint} ${a.constraintDate ?? ""}`.trim() : null };
-    const startSlip = daysBetween(b.startMs, a.startMs);
-    const finishSlip = daysBetween(b.finishMs, a.finishMs);
+    if (activity.name !== other.name) diff.name = { from: other.name, to: activity.name };
+    if (activity.status !== other.status) diff.status = { from: other.status, to: activity.status };
+    if (activity.originalDurationDays !== other.originalDurationDays) diff.originalDuration = { from: other.originalDurationDays, to: activity.originalDurationDays };
+    if (activity.constraintCode !== other.constraintCode || activity.constraintDate !== other.constraintDate)
+      diff.constraint = { from: other.constraint ? `${other.constraint} ${other.constraintDate ?? ""}`.trim() : null, to: activity.constraint ? `${activity.constraint} ${activity.constraintDate ?? ""}`.trim() : null };
+    const startSlip = daysBetween(other.startMs, activity.startMs);
+    const finishSlip = daysBetween(other.finishMs, activity.finishMs);
     if (startSlip) diff.startSlipDays = startSlip;
     if (finishSlip) diff.finishSlipDays = finishSlip;
-    if (a.totalFloatDays !== b.totalFloatDays) diff.totalFloat = { from: b.totalFloatDays, to: a.totalFloatDays };
-    if (Object.keys(diff).length) changed.push({ id: a.id, name: a.name, finish: a.finish, ...diff });
+    if (activity.totalFloatDays !== other.totalFloatDays) diff.totalFloat = { from: other.totalFloatDays, to: activity.totalFloatDays };
+    if (Object.keys(diff).length) changed.push({ id: activity.id, name: activity.name, finish: activity.finish, ...diff });
   }
-  changed.sort((x, y) => Math.abs(Number(y.finishSlipDays ?? 0)) - Math.abs(Number(x.finishSlipDays ?? 0)));
+  changed.sort((item, other) => Math.abs(Number(other.finishSlipDays ?? 0)) - Math.abs(Number(item.finishSlipDays ?? 0)));
 
-  const prevRels = new Map(prev.relationships.map((r) => [relKey(r), r]));
-  const currRels = new Map(curr.relationships.map((r) => [relKey(r), r]));
-  const relDesc = (r: Relationship) => `${r.pred.id} -> ${r.succ.id} ${r.type}${r.lagDays ? ` lag ${r.lagDays}d` : ""}`;
-  const logicAdded = [...currRels.entries()].filter(([k]) => !prevRels.has(k)).map(([, r]) => relDesc(r));
-  const logicRemoved = [...prevRels.entries()].filter(([k]) => !currRels.has(k)).map(([, r]) => relDesc(r));
+  const prevRels = new Map(prev.relationships.map((rel) => [relKey(rel), rel]));
+  const currRels = new Map(curr.relationships.map((rel) => [relKey(rel), rel]));
+  const relDesc = (rel: Relationship) => `${rel.pred.id} -> ${rel.succ.id} ${rel.type}${rel.lagDays ? ` lag ${rel.lagDays}d` : ""}`;
+  const logicAdded = [...currRels.entries()].filter(([key]) => !prevRels.has(key)).map(([, rel]) => relDesc(rel));
+  const logicRemoved = [...prevRels.entries()].filter(([key]) => !currRels.has(key)).map(([, rel]) => relDesc(rel));
   const lagChanged = [...currRels.entries()]
-    .filter(([k, r]) => prevRels.has(k) && prevRels.get(k)!.lagDays !== r.lagDays)
-    .map(([k, r]) => `${relDesc(r)} (was ${prevRels.get(k)!.lagDays}d)`);
+    .filter(([key, rel]) => prevRels.has(key) && prevRels.get(key)!.lagDays !== rel.lagDays)
+    .map(([key, rel]) => `${relDesc(rel)} (was ${prevRels.get(key)!.lagDays}d)`);
 
   const pf = latestFinish(prev.activities);
   const cf = latestFinish(curr.activities);
-  const progressed = curr.activities.filter((a) => {
-    const b = prev.byId.get(a.id);
-    return b && a.percentComplete > b.percentComplete;
+  const progressed = curr.activities.filter((activity) => {
+    const other = prev.byId.get(activity.id);
+    return other && activity.percentComplete > other.percentComplete;
   });
-  const cut = <T>(xs: T[]) => xs.slice(0, limit);
+  const cut = <Item>(xs: Item[]) => xs.slice(0, limit);
   return {
     previous: { file: prev.xer.path, project: prev.projectCode, dataDate: prev.dataDate, finish: pf?.finish, activities: prev.activities.length },
     current: { file: curr.xer.path, project: curr.projectCode, dataDate: curr.dataDate, finish: cf?.finish, activities: curr.activities.length },
@@ -512,8 +512,8 @@ export function compareSchedules(prev: Schedule, curr: Schedule, limit = 100) {
       removed: removed.length,
       changed: changed.length,
       progressed: progressed.length,
-      newlyCompleted: curr.activities.filter((a) => isComplete(a) && prev.byId.get(a.id) && !isComplete(prev.byId.get(a.id)!)).length,
-      newlyStarted: curr.activities.filter((a) => a.actualStart && prev.byId.get(a.id) && !prev.byId.get(a.id)!.actualStart).length,
+      newlyCompleted: curr.activities.filter((activity) => isComplete(activity) && prev.byId.get(activity.id) && !isComplete(prev.byId.get(activity.id)!)).length,
+      newlyStarted: curr.activities.filter((activity) => activity.actualStart && prev.byId.get(activity.id) && !prev.byId.get(activity.id)!.actualStart).length,
       logicAdded: logicAdded.length,
       logicRemoved: logicRemoved.length,
       lagChanged: lagChanged.length,

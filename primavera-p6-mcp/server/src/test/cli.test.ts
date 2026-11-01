@@ -35,7 +35,3 @@ test("validates arguments and gates P6 tools", () => {
   assert.ok(list.notAvailable.includes("p6_schedule_project"));
 });
 
-test("docs covers every tool", () => {
-  const docs = run(["docs"]).stdout;
-  for (const name of ["xer_schedule_health", "p6_list_activities", "p6_schedule_project"]) assert.match(docs, new RegExp(`### \`${name}\``));
-});

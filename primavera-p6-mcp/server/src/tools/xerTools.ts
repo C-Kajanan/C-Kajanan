@@ -1,66 +1,29 @@
-// Tools that work on XER files exported from P6. They need no connection to
-// a P6 server, only read access to the file.
+// Tool definitions (names, descriptions, zod argument schemas) for the xer_*
+// tools. The logic lives in xerHandlers.ts.
 
-import { readdirSync, statSync } from "node:fs";
-import { join, resolve } from "node:path";
 import { z } from "zod";
-import {
-  compareSchedules,
-  criticalPath,
-  dcmaCheck,
-  drivingPath,
-  filterActivities,
-  latestFinish,
-  lookahead,
-  resourceSummary,
-  summary,
-  wbsTree,
-} from "../analysis.js";
-import { brief, buildSchedule, detail, findActivity, listProjects } from "../schedule.js";
-import { loadXer, table, XerError } from "../xer.js";
-import { page, type ToolDef } from "./types.js";
+import { createXerHandlers } from "./xerHandlers.js";
+import type { ToolDef } from "./types.js";
 
-const file = z.string().describe("Path to the .xer file (absolute, or relative to P6_XER_DIR)");
+const file = z.string().describe("Path to the .xer file (absolute, or relative to the working folder)");
 const project = z.string().optional().describe("Project ID (short name) when the XER holds more than one project");
 const limit = z.number().int().min(1).max(5000).default(200);
 const offset = z.number().int().min(0).default(0);
 
-const xerDir = () => process.env.P6_XER_DIR || process.cwd();
-const pathOf = (p: string) => resolve(xerDir(), p);
-const sched = (args: { file: string; project?: string }) => buildSchedule(loadXer(pathOf(args.file)), args.project);
+/** The MCP server resolves relative paths against P6_XER_DIR, else its working directory. */
+const handlers = createXerHandlers(() => process.env.P6_XER_DIR || process.cwd());
 
 export const xerTools: ToolDef[] = [
   {
     name: "xer_list_files",
     title: "List XER files",
-    description: "Find .xer files in a folder (default P6_XER_DIR, else the current directory), newest first.",
+    description: "Find .xer files in a folder (default: the working folder), newest first.",
     input: {
-      folder: z.string().optional().describe("Folder to search; defaults to P6_XER_DIR"),
+      folder: z.string().optional().describe("Folder to search; defaults to the working folder"),
       recursive: z.boolean().default(false),
     },
     readOnly: true,
-    run({ folder, recursive }) {
-      const root = resolve(xerDir(), folder ?? ".");
-      const found: { path: string; sizeKb: number; modified: string }[] = [];
-      const walk = (dir: string, depth: number) => {
-        let entries;
-        try {
-          entries = readdirSync(dir, { withFileTypes: true });
-        } catch {
-          throw new XerError(`Can't read folder ${dir}`);
-        }
-        for (const e of entries) {
-          const p = join(dir, e.name);
-          if (e.isDirectory() && recursive && depth < 6 && !e.name.startsWith(".")) walk(p, depth + 1);
-          else if (e.isFile() && e.name.toLowerCase().endsWith(".xer")) {
-            const st = statSync(p);
-            found.push({ path: p, sizeKb: Math.round(st.size / 1024), modified: st.mtime.toISOString() });
-          }
-        }
-      };
-      walk(root, 0);
-      return { folder: root, files: found.sort((a, b) => b.modified.localeCompare(a.modified)) };
-    },
+    run: handlers.xer_list_files,
   },
   {
     name: "xer_open",
@@ -69,17 +32,7 @@ export const xerTools: ToolDef[] = [
       "Load an XER file and list the projects and tables in it. Call this first to see what an XER contains; the other xer_* tools load the file on demand too.",
     input: { file },
     readOnly: true,
-    run({ file }) {
-      const xer = loadXer(pathOf(file));
-      return {
-        file: xer.path,
-        p6Version: xer.version,
-        exportDate: xer.exportDate,
-        exportedBy: xer.exportUser,
-        projects: listProjects(xer),
-        tables: Object.fromEntries([...xer.tables].map(([k, v]) => [k, v.length])),
-      };
-    },
+    run: handlers.xer_open,
   },
   {
     name: "xer_project_summary",
@@ -88,7 +41,7 @@ export const xerTools: ToolDef[] = [
       "Key facts about a project in an XER: data date, start and finish, must-finish-by, activity counts by status and type, percent complete, critical and negative-float counts, cost totals.",
     input: { file, project, criticalFloat: z.number().default(0).describe("Total float (days) at or below which an activity counts as critical") },
     readOnly: true,
-    run: (a) => summary(sched(a), a.criticalFloat),
+    run: handlers.xer_project_summary,
   },
   {
     name: "xer_list_activities",
@@ -113,10 +66,7 @@ export const xerTools: ToolDef[] = [
       offset,
     },
     readOnly: true,
-    run(a) {
-      const s = sched(a);
-      return { project: s.projectCode, dataDate: s.dataDate, ...page(filterActivities(s, a).map(brief), a.limit, a.offset) };
-    },
+    run: handlers.xer_list_activities,
   },
   {
     name: "xer_get_activity",
@@ -124,7 +74,7 @@ export const xerTools: ToolDef[] = [
     description: "Everything about one activity: dates, durations, floats, constraint, calendar, WBS path, predecessors, successors and resource assignments.",
     input: { file, project, activityId: z.string().describe("Activity ID as shown in P6, e.g. A1010") },
     readOnly: true,
-    run: (a) => detail(findActivity(sched(a), a.activityId)),
+    run: handlers.xer_get_activity,
   },
   {
     name: "xer_wbs",
@@ -132,7 +82,7 @@ export const xerTools: ToolDef[] = [
     description: "The project's WBS as a tree, with activity count, start, finish and lowest total float under each element.",
     input: { file, project, maxDepth: z.number().int().min(0).max(20).default(10) },
     readOnly: true,
-    run: (a) => wbsTree(sched(a), a.maxDepth),
+    run: handlers.xer_wbs,
   },
   {
     name: "xer_critical_path",
@@ -145,7 +95,7 @@ export const xerTools: ToolDef[] = [
       includeCompleted: z.boolean().default(false),
     },
     readOnly: true,
-    run: (a) => criticalPath(sched(a), a.floatThreshold, a.includeCompleted),
+    run: handlers.xer_critical_path,
   },
   {
     name: "xer_driving_path",
@@ -154,15 +104,7 @@ export const xerTools: ToolDef[] = [
       "Trace the chain of driving predecessors back from an activity (default: the one that finishes last) to the data date. Use it to explain why a milestone finishes when it does.",
     input: { file, project, activityId: z.string().optional().describe("Target activity ID; defaults to the latest-finishing incomplete activity") },
     readOnly: true,
-    run(a) {
-      const s = sched(a);
-      let target = a.activityId ? findActivity(s, a.activityId) : undefined;
-      if (!target) {
-        target = latestFinish(s.activities.filter((x) => x.status !== "Completed"));
-        if (!target) throw new XerError("The project has no incomplete activities.");
-      }
-      return drivingPath(s, target);
-    },
+    run: handlers.xer_driving_path,
   },
   {
     name: "xer_schedule_health",
@@ -176,11 +118,7 @@ export const xerTools: ToolDef[] = [
       baselineProject: z.string().optional(),
     },
     readOnly: true,
-    run(a) {
-      const s = sched(a);
-      const b = a.baselineFile ? sched({ file: a.baselineFile, project: a.baselineProject ?? a.project }) : undefined;
-      return dcmaCheck(s, b);
-    },
+    run: handlers.xer_schedule_health,
   },
   {
     name: "xer_compare",
@@ -195,11 +133,7 @@ export const xerTools: ToolDef[] = [
       limit: z.number().int().min(1).max(5000).default(100).describe("Maximum items per list"),
     },
     readOnly: true,
-    run(a) {
-      const prev = sched({ file: a.previousFile, project: a.previousProject ?? a.project });
-      const curr = sched({ file: a.currentFile, project: a.project });
-      return compareSchedules(prev, curr, a.limit);
-    },
+    run: handlers.xer_compare,
   },
   {
     name: "xer_lookahead",
@@ -207,7 +141,7 @@ export const xerTools: ToolDef[] = [
     description: "Incomplete activities that are in progress, start or finish within the next N days from the data date (or a given date). Good for 2-, 3- or 6-week look-aheads.",
     input: { file, project, days: z.number().int().min(1).max(366).default(21), from: z.string().optional().describe("YYYY-MM-DD; defaults to the data date") },
     readOnly: true,
-    run: (a) => lookahead(sched(a), a.days, a.from),
+    run: handlers.xer_lookahead,
   },
   {
     name: "xer_resources",
@@ -215,7 +149,7 @@ export const xerTools: ToolDef[] = [
     description: "Resources assigned in the project with planned, actual and remaining units and costs.",
     input: { file, project },
     readOnly: true,
-    run: (a) => resourceSummary(sched(a)),
+    run: handlers.xer_resources,
   },
   {
     name: "xer_query_table",
@@ -232,18 +166,6 @@ export const xerTools: ToolDef[] = [
       offset,
     },
     readOnly: true,
-    run(a) {
-      const xer = loadXer(pathOf(a.file));
-      if (!xer.tables.has(a.table)) throw new XerError(`No table ${a.table}. Tables: ${[...xer.tables.keys()].join(", ")}`);
-      const needle = a.contains?.toLowerCase();
-      const rows = table(xer, a.table).filter(
-        (r) =>
-          Object.entries((a.where ?? {}) as Record<string, string>).every(([k, v]) => r[k] === v) &&
-          (!needle || Object.values(r).some((v) => v.toLowerCase().includes(needle))),
-      );
-      const fields = a.fields as string[] | undefined;
-      const shaped = fields ? rows.map((r) => Object.fromEntries(fields.map((f) => [f, r[f]]))) : rows;
-      return { table: a.table, fields: fields ?? Object.keys(rows[0] ?? {}), ...page(shaped, a.limit, a.offset) };
-    },
+    run: handlers.xer_query_table,
   },
 ];

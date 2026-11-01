@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-// Command-line front end to the same tools the MCP server exposes. The
-// primavera-p6 skill bundles this file so the tools run without an MCP
-// client or an npm install.
+// Command-line front end to every tool the MCP server exposes, including the
+// live P6 ones (installed as the `p6` command of this package). The skill uses
+// its own offline entry point, src/skill/p6.ts.
 //
 //   p6 list                          tools available with the current environment
 //   p6 help <tool>                   description and JSON schema of a tool's arguments
-//   p6 docs                          Markdown reference of every tool (used to build the skill)
 //   p6 <tool> '<json args>'          run a tool, e.g. p6 xer_project_summary '{"file":"a.xer"}'
 //   p6 <tool> --file a.xer [--k v]   shorthand: --key value pairs become arguments
 
@@ -66,47 +65,6 @@ async function main() {
       tools: tools.map((t) => ({ name: t.name, description: t.description })),
       notAvailable: all.filter((t) => !tools.includes(t)).map((t) => t.name),
     });
-  }
-
-  if (cmd === "docs") {
-    const lines: string[] = [
-      "# Tool reference",
-      "",
-      "Generated from the tool schemas by `p6.mjs docs`. Run `node scripts/p6.mjs help <tool>` for the JSON schema of one tool.",
-      "",
-    ];
-    const groups: [string, ToolDef[]][] = [
-      ["XER files (no P6 server needed)", xerTools],
-      ["Live P6, read (needs P6_BASE_URL)", p6ReadTools],
-      ["Live P6, write (needs P6_BASE_URL and P6_ALLOW_WRITES=1)", p6WriteTools],
-    ];
-    for (const [heading, tools] of groups) {
-      lines.push(`## ${heading}`, "");
-      for (const t of tools) {
-        lines.push(`### \`${t.name}\``, "", t.description, "");
-        const schema = z.toJSONSchema(z.object(t.input), { io: "input" }) as {
-          properties?: Record<string, { type?: string; description?: string; default?: unknown; enum?: unknown[]; items?: { type?: string; enum?: unknown[] } }>;
-          required?: string[];
-        };
-        const props = Object.entries(schema.properties ?? {});
-        if (!props.length) {
-          lines.push("No arguments.", "");
-          continue;
-        }
-        lines.push("| Argument | Type | Notes |", "| --- | --- | --- |");
-        for (const [name, p] of props) {
-          const type = p.enum ? p.enum.map((e) => JSON.stringify(e)).join(" \\| ") : p.type === "array" ? `${p.items?.enum ? p.items.enum.map((e) => JSON.stringify(e)).join(" \\| ") : (p.items?.type ?? "any")}[]` : (p.type ?? "object");
-          const notes = [schema.required?.includes(name) ? "**required**" : "", p.description ?? "", p.default !== undefined ? `default \`${JSON.stringify(p.default)}\`` : ""]
-            .filter(Boolean)
-            .join(". ")
-            .replace(/\|/g, "\\|");
-          lines.push(`| \`${name}\` | ${type} | ${notes} |`);
-        }
-        lines.push("");
-      }
-    }
-    process.stdout.write(lines.join("\n"));
-    return;
   }
 
   if (cmd === "help") {

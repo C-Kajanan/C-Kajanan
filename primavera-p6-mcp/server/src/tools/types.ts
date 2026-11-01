@@ -13,7 +13,7 @@ export interface ToolDef {
   run(args: any): Promise<unknown> | unknown;
 }
 
-export function page<T>(items: T[], limit: number, offset = 0) {
+export function page<Item>(items: Item[], limit: number, offset = 0) {
   return {
     total: items.length,
     offset,

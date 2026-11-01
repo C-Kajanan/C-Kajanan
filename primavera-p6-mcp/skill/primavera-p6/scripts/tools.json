@@ -1,0 +1,457 @@
+[
+  {
+    "name": "xer_list_files",
+    "title": "List XER files",
+    "description": "Find .xer files in a folder (default: the working folder), newest first.",
+    "args": [
+      {
+        "name": "folder",
+        "type": "string",
+        "required": false,
+        "description": "Folder to search; defaults to the working folder"
+      },
+      {
+        "name": "recursive",
+        "type": "boolean",
+        "required": false,
+        "default": false
+      }
+    ]
+  },
+  {
+    "name": "xer_open",
+    "title": "Open XER file",
+    "description": "Load an XER file and list the projects and tables in it. Call this first to see what an XER contains; the other xer_* tools load the file on demand too.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      }
+    ]
+  },
+  {
+    "name": "xer_project_summary",
+    "title": "Project summary",
+    "description": "Key facts about a project in an XER: data date, start and finish, must-finish-by, activity counts by status and type, percent complete, critical and negative-float counts, cost totals.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      },
+      {
+        "name": "criticalFloat",
+        "type": "number",
+        "required": false,
+        "description": "Total float (days) at or below which an activity counts as critical",
+        "default": 0
+      }
+    ]
+  },
+  {
+    "name": "xer_list_activities",
+    "title": "List activities",
+    "description": "Activities in the project, ordered by start, with optional filters. Durations and floats are working days; dates are P6 dates (actual where they exist, otherwise forecast).",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      },
+      {
+        "name": "status",
+        "type": "array",
+        "required": false,
+        "items": {
+          "type": "string",
+          "enum": [
+            "Not Started",
+            "In Progress",
+            "Completed"
+          ]
+        }
+      },
+      {
+        "name": "types",
+        "type": "array",
+        "required": false,
+        "description": "Activity types, e.g. 'Task Dependent', 'Milestone', 'Level of Effort' (substring match)",
+        "items": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "wbs",
+        "type": "string",
+        "required": false,
+        "description": "WBS code prefix (e.g. '1.2') or part of a WBS name"
+      },
+      {
+        "name": "search",
+        "type": "string",
+        "required": false,
+        "description": "Substring of activity ID or name"
+      },
+      {
+        "name": "maxFloat",
+        "type": "number",
+        "required": false,
+        "description": "Only activities with total float <= this many days"
+      },
+      {
+        "name": "minFloat",
+        "type": "number",
+        "required": false,
+        "description": "Only activities with total float >= this many days"
+      },
+      {
+        "name": "longestPathOnly",
+        "type": "boolean",
+        "required": false,
+        "description": "Only activities P6 flagged as on the longest path"
+      },
+      {
+        "name": "startsAfter",
+        "type": "string",
+        "required": false,
+        "description": "YYYY-MM-DD"
+      },
+      {
+        "name": "finishesBefore",
+        "type": "string",
+        "required": false,
+        "description": "YYYY-MM-DD"
+      },
+      {
+        "name": "hasConstraint",
+        "type": "boolean",
+        "required": false
+      },
+      {
+        "name": "resource",
+        "type": "string",
+        "required": false,
+        "description": "Resource ID or name assigned to the activity"
+      },
+      {
+        "name": "limit",
+        "type": "integer",
+        "required": false,
+        "default": 200,
+        "minimum": 1,
+        "maximum": 5000
+      },
+      {
+        "name": "offset",
+        "type": "integer",
+        "required": false,
+        "default": 0,
+        "minimum": 0,
+        "maximum": 9007199254740991
+      }
+    ]
+  },
+  {
+    "name": "xer_get_activity",
+    "title": "Get activity",
+    "description": "Everything about one activity: dates, durations, floats, constraint, calendar, WBS path, predecessors, successors and resource assignments.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      },
+      {
+        "name": "activityId",
+        "type": "string",
+        "required": true,
+        "description": "Activity ID as shown in P6, e.g. A1010"
+      }
+    ]
+  },
+  {
+    "name": "xer_wbs",
+    "title": "WBS tree",
+    "description": "The project's WBS as a tree, with activity count, start, finish and lowest total float under each element.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      },
+      {
+        "name": "maxDepth",
+        "type": "integer",
+        "required": false,
+        "default": 10,
+        "minimum": 0,
+        "maximum": 20
+      }
+    ]
+  },
+  {
+    "name": "xer_critical_path",
+    "title": "Critical path",
+    "description": "Incomplete activities with total float at or below a threshold (default 0) or on P6's longest path, in start order.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      },
+      {
+        "name": "floatThreshold",
+        "type": "number",
+        "required": false,
+        "description": "Days of total float that still count as critical",
+        "default": 0
+      },
+      {
+        "name": "includeCompleted",
+        "type": "boolean",
+        "required": false,
+        "default": false
+      }
+    ]
+  },
+  {
+    "name": "xer_driving_path",
+    "title": "Driving path to an activity",
+    "description": "Trace the chain of driving predecessors back from an activity (default: the one that finishes last) to the data date. Use it to explain why a milestone finishes when it does.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      },
+      {
+        "name": "activityId",
+        "type": "string",
+        "required": false,
+        "description": "Target activity ID; defaults to the latest-finishing incomplete activity"
+      }
+    ]
+  },
+  {
+    "name": "xer_schedule_health",
+    "title": "Schedule health check (DCMA 14-point)",
+    "description": "Run the DCMA 14-point assessment: logic, leads, lags, relationship types, hard constraints, high float, negative float, high duration, invalid dates, resources, missed tasks, critical path test, CPLI and BEI. Each check lists offending activities. Pass a baseline XER for checks 11 and 14; otherwise planned dates are used.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      },
+      {
+        "name": "baselineFile",
+        "type": "string",
+        "required": false,
+        "description": "XER of the baseline schedule, matched by activity ID"
+      },
+      {
+        "name": "baselineProject",
+        "type": "string",
+        "required": false
+      }
+    ]
+  },
+  {
+    "name": "xer_compare",
+    "title": "Compare two schedules",
+    "description": "Compare two XERs of the same project (e.g. last month's update and this month's): finish slip, data date move, activities added and removed, changed durations, dates, float, status and constraints, and logic added, removed or with changed lag. Matching is by activity ID.",
+    "args": [
+      {
+        "name": "previousFile",
+        "type": "string",
+        "required": true,
+        "description": "Earlier XER (baseline or previous update)"
+      },
+      {
+        "name": "currentFile",
+        "type": "string",
+        "required": true,
+        "description": "Later XER"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      },
+      {
+        "name": "previousProject",
+        "type": "string",
+        "required": false,
+        "description": "Project ID in the earlier file if it differs"
+      },
+      {
+        "name": "limit",
+        "type": "integer",
+        "required": false,
+        "description": "Maximum items per list",
+        "default": 100,
+        "minimum": 1,
+        "maximum": 5000
+      }
+    ]
+  },
+  {
+    "name": "xer_lookahead",
+    "title": "Look-ahead",
+    "description": "Incomplete activities that are in progress, start or finish within the next N days from the data date (or a given date). Good for 2-, 3- or 6-week look-aheads.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      },
+      {
+        "name": "days",
+        "type": "integer",
+        "required": false,
+        "default": 21,
+        "minimum": 1,
+        "maximum": 366
+      },
+      {
+        "name": "from",
+        "type": "string",
+        "required": false,
+        "description": "YYYY-MM-DD; defaults to the data date"
+      }
+    ]
+  },
+  {
+    "name": "xer_resources",
+    "title": "Resource loading",
+    "description": "Resources assigned in the project with planned, actual and remaining units and costs.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "project",
+        "type": "string",
+        "required": false,
+        "description": "Project ID (short name) when the XER holds more than one project"
+      }
+    ]
+  },
+  {
+    "name": "xer_query_table",
+    "title": "Query raw XER table",
+    "description": "Read rows from any table in the XER (e.g. TASK, TASKPRED, PROJWBS, CALENDAR, RSRC, TASKRSRC, ACTVCODE, TASKACTV, UDFVALUE) with field names as P6 exports them. Use it for data the other tools don't cover.",
+    "args": [
+      {
+        "name": "file",
+        "type": "string",
+        "required": true,
+        "description": "Path to the .xer file (absolute, or relative to the working folder)"
+      },
+      {
+        "name": "table",
+        "type": "string",
+        "required": true,
+        "description": "Table name, e.g. TASK"
+      },
+      {
+        "name": "where",
+        "type": "object",
+        "required": false,
+        "description": "Exact-match filters, e.g. { \"proj_id\": \"4512\" }"
+      },
+      {
+        "name": "contains",
+        "type": "string",
+        "required": false,
+        "description": "Keep rows where any field contains this text (case-insensitive)"
+      },
+      {
+        "name": "fields",
+        "type": "array",
+        "required": false,
+        "description": "Fields to return; default all",
+        "items": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "type": "integer",
+        "required": false,
+        "default": 200,
+        "minimum": 1,
+        "maximum": 5000
+      },
+      {
+        "name": "offset",
+        "type": "integer",
+        "required": false,
+        "default": 0,
+        "minimum": 0,
+        "maximum": 9007199254740991
+      }
+    ]
+  }
+]

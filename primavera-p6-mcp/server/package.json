@@ -14,7 +14,7 @@
     "build": "tsc",
     "start": "node build/index.js",
     "test": "npm run build && node --test build/test/*.test.js",
-    "build:skill": "tsc && esbuild build/cli.js --bundle --platform=node --format=esm --target=node18 --legal-comments=none --outfile=../skill/primavera-p6/scripts/p6.mjs && node build/cli.js docs > ../skill/primavera-p6/references/tools.md && cp ../examples/*.xer ../skill/primavera-p6/examples/ && cd ../skill && rm -f primavera-p6.zip && zip -qr -X primavera-p6.zip primavera-p6"
+    "build:skill": "tsc && node build/skill/buildSpec.js ../skill/primavera-p6 && esbuild build/skill/p6.js --bundle --platform=node --format=esm --target=node18 --legal-comments=none --outfile=../skill/primavera-p6/scripts/p6.mjs && cp ../examples/*.xer ../skill/primavera-p6/examples/ && cd ../skill && rm -f primavera-p6.zip && zip -qr -X primavera-p6.zip primavera-p6"
   },
   "keywords": [
     "mcp",
