@@ -74,6 +74,32 @@ If `nblm-mcp` is not on the client's `PATH` (for example, you installed into a v
 | `--download-dir` | `NOTEBOOKLM_MCP_DOWNLOAD_DIR` | `~/Downloads/notebooklm` | Where `download_artifact` saves files |
 | `--transport` | — | `stdio` | `stdio` or `streamable-http` |
 
+## Use it as a Claude skill
+
+[`skill/notebooklm-mcp/`](skill/notebooklm-mcp) packages the server as one Agent Skill. It holds:
+
+| File | What it does |
+| --- | --- |
+| `SKILL.md` | Tells Claude when to use NotebookLM, how to check that the server is connected, and the workflows for cited Q&A, research and Studio generation |
+| `scripts/setup.sh` | Installs `nblm-mcp` (with uv, pipx or pip), installs Chromium for the sign-in, and registers the server with Claude Code |
+| `references/tools.md` | Every tool and its parameters |
+
+Install it for Claude Code:
+
+```bash
+git clone https://github.com/C-Kajanan/C-Kajanan.git
+```
+```bash
+mkdir -p ~/.claude/skills && cp -r C-Kajanan/notebooklm-mcp/skill/notebooklm-mcp ~/.claude/skills/
+```
+```bash
+bash ~/.claude/skills/notebooklm-mcp/scripts/setup.sh
+```
+
+Then run the sign-in command the script prints (`... -m notebooklm login`) and restart Claude Code. After that, asking for something like "make a podcast from these three links in NotebookLM" loads the skill, which drives the server's tools.
+
+For the Claude apps, zip the folder (`cd skill && zip -r notebooklm-mcp.zip notebooklm-mcp`) and upload it under **Settings → Capabilities → Skills**. The skill still needs the `nblm-mcp` server running on a machine you control, connected to that client.
+
 ## Tools
 
 | Area | Tools |
