@@ -6,12 +6,16 @@
   ./install.ps1 -AcadVersion 2025
 .EXAMPLE
   ./install.ps1 -AcadVersion 2024 -AllUsers    # run as administrator
+.EXAMPLE
+  ./install.ps1 -AcadVersion 2025 -Skill       # also install the Claude Code skill
 #>
 param(
     [ValidateSet("2021", "2022", "2023", "2024", "2025", "2026", "2027")]
     [string]$AcadVersion = "2025",
     # Install to %ProgramData% (a trusted location for every user) instead of %APPDATA%.
-    [switch]$AllUsers
+    [switch]$AllUsers,
+    # Also install the "autocad" skill for Claude Code to %USERPROFILE%\.claude\skills\autocad.
+    [switch]$Skill
 )
 $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
@@ -35,6 +39,13 @@ Push-Location "$root\server"
 npm install | Out-Host
 npm run build | Out-Host
 Pop-Location
+
+if ($Skill) {
+    $skillTarget = Join-Path $env:USERPROFILE ".claude\skills\autocad"
+    New-Item -ItemType Directory -Force -Path $skillTarget | Out-Null
+    Copy-Item "$root\skill\autocad\*" $skillTarget -Recurse -Force
+    Write-Host "Skill installed to $skillTarget"
+}
 
 $serverPath = (Resolve-Path "$root\server\build\index.js").Path -replace '\\', '/'
 Write-Host ""

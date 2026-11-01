@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
-    "test": "npm run build && node --test build/test/*.test.js"
+    "gen-skill": "tsc && node scripts/gen-skill.mjs",
+    "test": "npm run build && node scripts/gen-skill.mjs --check && node --test build/test/*.test.js"
   },
   "keywords": [
     "mcp",

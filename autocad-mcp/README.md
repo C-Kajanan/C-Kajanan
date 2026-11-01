@@ -6,12 +6,11 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server for Autodesk 
  Claude / MCP client ──stdio──▶ autocad-mcp-server (Node) ──HTTP localhost:48885──▶ AutoCadMcp plug-in (inside AutoCAD)
 ```
 
-There are two parts:
-
 | Folder | What it is |
 | --- | --- |
 | [`plugin/`](plugin) | C# AutoCAD .NET plug-in. It runs a small HTTP endpoint on `localhost` and executes each request on AutoCAD's main thread, in the application context, with the document locked, and only while no command is running. |
 | [`server/`](server) | TypeScript MCP server. Your MCP client starts it over stdio. It defines the tools and forwards each call to the plug-in. |
+| [`skill/autocad/`](skill/autocad) | The same tools packaged as one [Agent Skill](https://code.claude.com/docs/en/skills) for Claude Code: instructions, a full tool reference and a dependency-free script that talks to the plug-in directly. Use it instead of, or alongside, the MCP server. |
 
 Supported AutoCAD versions: **2021–2024** (.NET Framework 4.8) and **2025–2026** (.NET 8). AutoCAD-based products such as AutoCAD Architecture, Mechanical, MEP, Electrical, Map 3D and Civil 3D load it too. A build for **2027** (.NET 10) is set up but untested. AutoCAD LT has no .NET API and isn't supported.
 
@@ -68,6 +67,18 @@ Claude Code:
 ```powershell
 claude mcp add autocad -- node C:/path/to/C-Kajanan/autocad-mcp/server/build/index.js
 ```
+
+### Or use it as a skill
+
+The [`skill/autocad`](skill/autocad) folder is a self-contained Claude Code skill. It needs the plug-in, but not the MCP server or any MCP config. Install it with the plug-in:
+
+```powershell
+./install.ps1 -AcadVersion 2025 -Skill
+```
+
+or copy `skill/autocad` to `%USERPROFILE%\.claude\skills\autocad` (all projects) or `<project>\.claude\skills\autocad` (one project). Claude Code loads it whenever you ask about the open AutoCAD drawing, and runs `node scripts/acad.mjs <tool> '<json>'` for each operation. The skill asks before erasing or running raw commands; its script refuses `erase_entities` and `run_command` without `--confirm`.
+
+The skill has to run on the same computer as AutoCAD, because the plug-in only listens on `localhost`. That rules out claude.ai and other cloud sandboxes.
 
 Start AutoCAD and open a drawing. The bridge starts with AutoCAD and prints `AutoCAD MCP: listening on http://localhost:48885/` on the command line. Type `MCPSTOP`, `MCPSTART` or `MCPSTATUS` to control it. Then ask Claude something like:
 
@@ -145,13 +156,13 @@ The assistant can change and erase entities, save over files and run arbitrary A
 ## Development
 
 ```bash
-cd server && npm install && npm test        # builds and runs the MCP tests against a mock plug-in
+cd server && npm install && npm test        # builds, checks the skill reference, runs MCP and skill tests against a mock plug-in
 cd plugin && dotnet build -p:AcadVersion=2025
 ```
 
 The plug-in compiles on any OS against Autodesk's [AutoCAD.NET](https://www.nuget.org/packages/AutoCAD.NET) reference packages. Running it needs AutoCAD on Windows.
 
-To add a tool, write a static method `object Name(CommandContext c)` with `[McpCommand("tool_name")]` in `plugin/Commands/`, and add a matching entry to `server/src/tools.ts`.
+To add a tool, write a static method `object Name(CommandContext c)` with `[McpCommand("tool_name")]` in `plugin/Commands/`, add a matching entry to `server/src/tools.ts`, and run `npm run gen-skill` in `server/` to regenerate the skill's `reference.md` and `scripts/tools.json`. `npm test` fails if they are out of date.
 
 ## License
 
