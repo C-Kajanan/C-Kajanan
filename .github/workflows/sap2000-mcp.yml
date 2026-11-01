@@ -1,0 +1,24 @@
+name: sap2000-mcp
+
+on:
+  push:
+    paths: ["sap2000-mcp/**", ".github/workflows/sap2000-mcp.yml"]
+  pull_request:
+    paths: ["sap2000-mcp/**", ".github/workflows/sap2000-mcp.yml"]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: sap2000-mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: pytest -q

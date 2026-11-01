@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sap2000": {
+      "command": "uvx",
+      "args": ["--from", "${CLAUDE_PLUGIN_ROOT}", "sap2000-mcp"]
+    }
+  }
+}

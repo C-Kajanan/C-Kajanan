@@ -1,0 +1,12 @@
+{
+  "name": "c-kajanan",
+  "owner": { "name": "C-Kajanan" },
+  "plugins": [
+    {
+      "name": "sap2000",
+      "source": "./sap2000-mcp",
+      "description": "Drive CSi SAP2000 from Claude: build models, run analyses, read results and design ratios.",
+      "version": "0.1.0"
+    }
+  ]
+}
