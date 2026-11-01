@@ -1,0 +1,62 @@
+ERMHDR	22.12	2026-03-01	Project	ADMIN	admin	dbxDatabaseNoName	Project Management	USD
+%T	CURRTYPE
+%F	curr_id	curr_short_name	curr_symbol
+%R	1	USD	$
+%T	CALENDAR
+%F	clndr_id	default_flag	clndr_name	proj_id	base_clndr_id	last_chng_date	clndr_type	day_hr_cnt	week_hr_cnt	month_hr_cnt	year_hr_cnt
+%R	500	Y	Standard 5 Day Workweek			2025-12-01 00:00	CA_Base	8	40	172	2000
+%T	PROJECT
+%F	proj_id	fy_start_month_num	allow_complete_flag	proj_short_name	clndr_id	plan_start_date	plan_end_date	scd_end_date	last_recalc_date	export_flag	guid
+%R	100	1	Y	OFFICE-01	500	2026-01-05 08:00	2026-09-25 17:00	2026-10-02 17:00	2026-03-02 08:00	Y	sampleGUID0001
+%T	PROJWBS
+%F	wbs_id	proj_id	obs_id	seq_num	proj_node_flag	sum_data_flag	status_code	wbs_short_name	wbs_name	parent_wbs_id
+%R	1000	100	1	0	Y	N	WS_Open	OFFICE-01	Office Building	
+%R	1001	100	1	10	N	N	WS_Open	PRE	Preconstruction	1000
+%R	1002	100	1	20	N	N	WS_Open	SUB	Substructure	1000
+%R	1003	100	1	30	N	N	WS_Open	SUP	Superstructure	1000
+%R	1004	100	1	40	N	N	WS_Open	FIN	Fit-out and Handover	1000
+%R	1005	100	1	50	N	N	WS_Open	MGT	Management	1000
+%T	RSRC
+%F	rsrc_id	clndr_id	rsrc_name	rsrc_short_name	rsrc_type	active_flag
+%R	3001	500	General labourer	LAB	RT_Labor	Y
+%R	3002	500	Excavator 30t	EXC	RT_Equip	Y
+%R	3003	500	Concrete	CONC	RT_Mat	Y
+%R	3004	500	Tower crane	CRANE	RT_Equip	Y
+%T	TASK
+%F	task_id	proj_id	wbs_id	clndr_id	phys_complete_pct	complete_pct_type	task_type	duration_type	status_code	task_code	task_name	total_float_hr_cnt	free_float_hr_cnt	remain_drtn_hr_cnt	target_drtn_hr_cnt	cstr_date	act_start_date	act_end_date	late_start_date	late_end_date	early_start_date	early_end_date	restart_date	reend_date	target_start_date	target_end_date	cstr_type	priority_type	driving_path_flag	cstr_date2	cstr_type2
+%R	2001	100	1001	500	100	CP_Phys	TT_Mile	DT_FixedDUR2	TK_Complete	M1000	Notice to Proceed			0	0		2026-01-05 08:00	2026-01-05 08:00							2026-01-05 08:00	2026-01-05 08:00		PT_Normal	N		
+%R	2002	100	1001	500	100	CP_Phys	TT_Task	DT_FixedDUR2	TK_Complete	A1010	Permits and approvals			0	160		2026-01-05 08:00	2026-01-30 17:00							2026-01-05 08:00	2026-01-30 17:00		PT_Normal	N		
+%R	2003	100	1001	500	100	CP_Phys	TT_Task	DT_FixedDUR2	TK_Complete	A1020	Mobilisation			0	40		2026-02-02 08:00	2026-02-06 17:00							2026-02-02 08:00	2026-02-06 17:00		PT_Normal	N		
+%R	2004	100	1002	500	67	CP_Phys	TT_Task	DT_FixedDUR2	TK_Active	A2010	Bulk excavation	-40	0	40	120		2026-02-09 08:00		2026-02-23 08:00	2026-02-27 17:00	2026-03-02 08:00	2026-03-06 17:00	2026-03-02 08:00	2026-03-06 17:00	2026-02-09 08:00	2026-02-27 17:00		PT_Normal	Y		
+%R	2005	100	1002	500	0	CP_Phys	TT_Task	DT_FixedDUR2	TK_NotStart	A2020	Foundations	-40	0	160	160				2026-03-02 08:00	2026-03-27 17:00	2026-03-09 08:00	2026-04-03 17:00			2026-03-02 08:00	2026-03-27 17:00		PT_Normal	Y		
+%R	2006	100	1002	500	0	CP_Phys	TT_Task	DT_FixedDUR2	TK_NotStart	A2030	Underground services	480	480	80	80				2026-05-28 08:00	2026-06-10 17:00	2026-03-05 08:00	2026-03-18 17:00			2026-03-02 08:00	2026-03-13 17:00		PT_Normal	N		
+%R	2007	100	1003	500	0	CP_Phys	TT_Task	DT_FixedDUR2	TK_NotStart	A3010	Structural frame	-40	0	400	400				2026-03-30 08:00	2026-06-05 17:00	2026-04-06 08:00	2026-06-12 17:00			2026-03-30 08:00	2026-06-05 17:00		PT_Normal	Y		
+%R	2008	100	1003	500	0	CP_Phys	TT_Task	DT_FixedDUR2	TK_NotStart	A3020	Roof	120	120	120	120				2026-06-29 08:00	2026-07-17 17:00	2026-06-08 08:00	2026-06-26 17:00			2026-06-01 08:00	2026-06-19 17:00		PT_Normal	N		
+%R	2009	100	1003	500	0	CP_Phys	TT_Task	DT_FixedDUR2	TK_NotStart	A3030	Facade and glazing	-40	0	240	240	2026-07-17 17:00			2026-06-08 08:00	2026-07-17 17:00	2026-06-15 08:00	2026-07-24 17:00			2026-06-08 08:00	2026-07-17 17:00	CS_MEOB	PT_Normal	Y		
+%R	2010	100	1004	500	0	CP_Phys	TT_Task	DT_FixedDUR2	TK_NotStart	A4010	Interior fit-out	-40	0	320	320				2026-07-20 08:00	2026-09-11 17:00	2026-07-27 08:00	2026-09-18 17:00			2026-07-20 08:00	2026-09-11 17:00		PT_Normal	Y		
+%R	2011	100	1004	500	0	CP_Phys	TT_Task	DT_FixedDUR2	TK_NotStart	A4020	Testing and commissioning	-40	0	80	80				2026-09-14 08:00	2026-09-25 17:00	2026-09-21 08:00	2026-10-02 17:00			2026-09-14 08:00	2026-09-25 17:00		PT_Normal	Y		
+%R	2012	100	1004	500	0	CP_Phys	TT_FinMile	DT_FixedDUR2	TK_NotStart	M9000	Practical completion	-40	0	0	0				2026-09-25 17:00	2026-09-25 17:00	2026-10-02 17:00	2026-10-02 17:00			2026-09-25 08:00	2026-09-25 17:00		PT_Normal	Y		
+%R	2013	100	1005	500	20	CP_Phys	TT_LOE	DT_FixedDUR2	TK_Active	A0100	Project management	0	0	1200	1560		2026-01-05 08:00		2026-03-02 08:00	2026-09-25 17:00	2026-03-02 08:00	2026-09-25 17:00	2026-03-02 08:00	2026-09-25 17:00	2026-01-05 08:00	2026-09-25 17:00		PT_Normal	N		
+%T	TASKPRED
+%F	task_pred_id	task_id	pred_task_id	proj_id	pred_proj_id	pred_type	lag_hr_cnt
+%R	5000	2002	2001	100	100	PR_FS	0
+%R	5001	2003	2002	100	100	PR_FS	0
+%R	5002	2004	2003	100	100	PR_FS	0
+%R	5003	2005	2004	100	100	PR_FS	0
+%R	5004	2006	2004	100	100	PR_SS	24
+%R	5005	2007	2005	100	100	PR_FS	0
+%R	5006	2008	2007	100	100	PR_FS	-40
+%R	5007	2009	2007	100	100	PR_FS	0
+%R	5008	2010	2008	100	100	PR_FS	0
+%R	5009	2010	2009	100	100	PR_FS	0
+%R	5010	2011	2010	100	100	PR_FS	0
+%R	5011	2012	2011	100	100	PR_FS	0
+%T	TASKRSRC
+%F	taskrsrc_id	task_id	proj_id	rsrc_id	remain_qty	target_qty	act_reg_qty	act_ot_qty	target_cost	act_reg_cost	act_ot_cost	remain_cost
+%R	4001	2004	100	3002	40	120	80	0	18000	12000	0	6000
+%R	4002	2004	100	3001	80	240	160	0	10800	7200	0	3600
+%R	4003	2005	100	3001	480	480	0	0	21600	0	0	21600
+%R	4004	2005	100	3003	900	900	0	0	144000	0	0	144000
+%R	4005	2007	100	3004	400	400	0	0	88000	0	0	88000
+%R	4006	2007	100	3001	1600	1600	0	0	72000	0	0	72000
+%E

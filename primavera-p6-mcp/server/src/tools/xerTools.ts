@@ -33,7 +33,7 @@ export const xerTools: ToolDef[] = [
   {
     name: "xer_list_files",
     title: "List XER files",
-    description: "Find .xer files in a folder (default P6_XER_DIR or the server's working directory), newest first.",
+    description: "Find .xer files in a folder (default P6_XER_DIR, else the current directory), newest first.",
     input: {
       folder: z.string().optional().describe("Folder to search; defaults to P6_XER_DIR"),
       recursive: z.boolean().default(false),

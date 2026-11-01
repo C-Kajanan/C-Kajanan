@@ -4,7 +4,8 @@
   "description": "MCP server for Oracle Primavera P6: analyse XER schedule files offline and read or update projects live through the P6 EPPM REST API.",
   "type": "module",
   "bin": {
-    "primavera-p6-mcp-server": "build/index.js"
+    "primavera-p6-mcp-server": "build/index.js",
+    "p6": "build/cli.js"
   },
   "files": [
     "build"
@@ -12,7 +13,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
-    "test": "npm run build && node --test build/test/*.test.js"
+    "test": "npm run build && node --test build/test/*.test.js",
+    "build:skill": "tsc && esbuild build/cli.js --bundle --platform=node --format=esm --target=node18 --legal-comments=none --outfile=../skill/primavera-p6/scripts/p6.mjs && node build/cli.js docs > ../skill/primavera-p6/references/tools.md && cp ../examples/*.xer ../skill/primavera-p6/examples/ && cd ../skill && rm -f primavera-p6.zip && zip -qr -X primavera-p6.zip primavera-p6"
   },
   "keywords": [
     "mcp",
@@ -35,6 +37,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "esbuild": "^0.25.10",
     "typescript": "^7.0.2"
   }
 }

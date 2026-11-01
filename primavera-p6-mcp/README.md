@@ -12,7 +12,30 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server for Oracle Pr
 
 Try it on the sample project in [`examples/`](examples): two monthly updates of a small office-building schedule with some typical problems planted in it (a lead, a lag, a hard constraint, an open end, negative float, a missed task).
 
-## Install
+## Use it as a skill
+
+Everything is also packaged as one Agent Skill, [`skill/primavera-p6/`](skill/primavera-p6). It contains `SKILL.md`, a single bundled script `scripts/p6.mjs` with all the tools and no dependencies, reference notes and the sample XERs. It needs only Node.js 18+, with no MCP setup and no `npm install`.
+
+- **Claude.ai / Claude Desktop**: download [`skill/primavera-p6.zip`](skill/primavera-p6.zip) and upload it under **Settings → Capabilities → Skills**. Then attach an XER to a chat and ask about it.
+- **Claude Code**: copy the folder into your skills directory:
+  ```bash
+  cp -r skill/primavera-p6 ~/.claude/skills/
+  ```
+  or into `.claude/skills/` of a project to share it with your team.
+
+The script works on its own too:
+
+```bash
+node skill/primavera-p6/scripts/p6.mjs list
+node skill/primavera-p6/scripts/p6.mjs xer_schedule_health --file my-schedule.xer
+node skill/primavera-p6/scripts/p6.mjs xer_compare --previousFile jan.xer --currentFile feb.xer
+```
+
+For the live P6 tools, set the same `P6_*` environment variables as for the MCP server (see [Configuration](#configuration)). In a claude.ai sandbox the P6 server also has to be reachable from that sandbox's network, which an internal P6 server usually isn't. In that case, use the MCP server locally, or export XERs and upload them.
+
+Choose the MCP server when you want Claude to connect to P6 directly from your machine. Choose the skill when you mostly work from XER files or want a one-file install.
+
+## Install (MCP server)
 
 You need [Node.js 18+](https://nodejs.org).
 
@@ -148,8 +171,11 @@ XER files are read as Windows-1252 unless they are valid UTF-8. Parsed files are
 ```bash
 cd server
 npm install
-npm test     # builds, then runs unit tests on the sample XERs and MCP tests against a mock P6 server
+npm test            # builds, then runs unit tests on the sample XERs, CLI tests, and MCP tests against a mock P6 server
+npm run build:skill # rebuilds skill/primavera-p6/scripts/p6.mjs, references/tools.md and skill/primavera-p6.zip
 ```
+
+Run `npm run build:skill` after changing a tool so the skill stays in step with the MCP server.
 
 The REST client follows Oracle's [P6 EPPM REST API](https://docs.oracle.com/cd/G18294_01/English/Integration_Documentation/rest_api/D99665.html) reference (release 25). To add a tool, add an entry to `server/src/tools/xerTools.ts` or `server/src/tools/p6Tools.ts`.
 
