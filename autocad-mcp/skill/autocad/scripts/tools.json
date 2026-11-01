@@ -1,0 +1,242 @@
+[
+  {
+    "name": "ping",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "list_drawings",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "get_drawing_info",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "list_layers",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "list_blocks",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "list_layouts",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "list_styles",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "query_entities",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "get_entity",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "get_selection",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "export_view_image",
+    "readOnly": true,
+    "destructive": false,
+    "image": true
+  },
+  {
+    "name": "draw_line",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "draw_polyline",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "draw_rectangle",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "draw_circle",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "draw_arc",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "draw_text",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "draw_mtext",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "draw_hatch",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "add_dimension",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "insert_block",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "create_block",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "set_entity_properties",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "set_block_attributes",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "move_entities",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "copy_entities",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "rotate_entities",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "scale_entities",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "mirror_entities",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "offset_entity",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "erase_entities",
+    "readOnly": false,
+    "destructive": true,
+    "image": false
+  },
+  {
+    "name": "create_layer",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "set_layer",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "load_linetype",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "select_entities",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "zoom",
+    "readOnly": true,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "open_drawing",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "new_drawing",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "save_drawing",
+    "readOnly": false,
+    "destructive": false,
+    "image": false
+  },
+  {
+    "name": "run_command",
+    "readOnly": false,
+    "destructive": true,
+    "image": false
+  }
+]

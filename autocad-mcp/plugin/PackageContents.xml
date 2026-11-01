@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Autoloader manifest. Copy the AutoCadMcp.bundle folder to
+  %APPDATA%\Autodesk\ApplicationPlugins\ (install.ps1 does this) and AutoCAD
+  loads the build that matches its release on startup.
+-->
+<ApplicationPackage
+    SchemaVersion="1.0"
+    AutodeskProduct="AutoCAD"
+    ProductType="Application"
+    Name="AutoCAD MCP"
+    AppVersion="0.1.0"
+    Description="Lets AI assistants (Claude, etc.) read and edit the open drawing through the Model Context Protocol."
+    Author="C-Kajanan"
+    ProductCode="{CA907E67-EDF3-40C1-AEAA-9C0312387EDF}"
+    UpgradeCode="{7E3B0F56-3F8C-4B15-839D-10695C48FDCB}"
+    HelpFile="https://github.com/C-Kajanan/C-Kajanan/tree/main/autocad-mcp">
+  <CompanyDetails Name="C-Kajanan" Url="https://github.com/C-Kajanan/C-Kajanan" />
+
+  <Components Description="AutoCAD 2021-2024">
+    <RuntimeRequirements OS="Win64" Platform="AutoCAD*" SeriesMin="R24.0" SeriesMax="R24.3" />
+    <ComponentEntry AppName="AutoCadMcp" ModuleName="./Contents/R24/AutoCadMcp.dll" LoadOnAutoCADStartup="True" AppDescription="AutoCAD MCP bridge" />
+  </Components>
+
+  <Components Description="AutoCAD 2025-2026">
+    <RuntimeRequirements OS="Win64" Platform="AutoCAD*" SeriesMin="R25.0" SeriesMax="R25.1" />
+    <ComponentEntry AppName="AutoCadMcp" ModuleName="./Contents/R25/AutoCadMcp.dll" LoadOnAutoCADStartup="True" AppDescription="AutoCAD MCP bridge" />
+  </Components>
+
+  <Components Description="AutoCAD 2027">
+    <RuntimeRequirements OS="Win64" Platform="AutoCAD*" SeriesMin="R26.0" SeriesMax="R26.0" />
+    <ComponentEntry AppName="AutoCadMcp" ModuleName="./Contents/R26/AutoCadMcp.dll" LoadOnAutoCADStartup="True" AppDescription="AutoCAD MCP bridge" />
+  </Components>
+</ApplicationPackage>

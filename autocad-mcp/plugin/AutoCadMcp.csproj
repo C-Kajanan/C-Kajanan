@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Build for a specific AutoCAD release with:
+      dotnet build -c Release -p:AcadVersion=2025
+    AutoCAD 2021-2024 run on .NET Framework 4.8, 2025-2026 on .NET 8 and 2027 on .NET 10.
+    One build works for every release of the same series (R24, R25, R26), so the
+    output goes to bin\<Configuration>\<series>\ to match PackageContents.xml.
+  -->
+  <PropertyGroup>
+    <AcadVersion Condition="'$(AcadVersion)' == ''">2025</AcadVersion>
+    <AcadSeries Condition="$(AcadVersion) &lt; 2025">R24</AcadSeries>
+    <AcadSeries Condition="$(AcadVersion) &gt;= 2025 And $(AcadVersion) &lt; 2027">R25</AcadSeries>
+    <AcadSeries Condition="$(AcadVersion) &gt;= 2027">R26</AcadSeries>
+
+    <!-- Compile against the oldest API of the series so the build runs on all of it. -->
+    <AcadApiVersion Condition="'$(AcadSeries)' == 'R24'">24.0.0</AcadApiVersion>
+    <AcadApiVersion Condition="'$(AcadSeries)' == 'R25'">25.0.1</AcadApiVersion>
+    <AcadApiVersion Condition="'$(AcadSeries)' == 'R26'">26.0.0</AcadApiVersion>
+
+    <TargetFramework Condition="'$(AcadSeries)' == 'R24'">net48</TargetFramework>
+    <TargetFramework Condition="'$(AcadSeries)' == 'R25'">net8.0-windows</TargetFramework>
+    <TargetFramework Condition="'$(AcadSeries)' == 'R26'">net10.0-windows</TargetFramework>
+
+    <AssemblyName>AutoCadMcp</AssemblyName>
+    <RootNamespace>AutoCadMcp</RootNamespace>
+    <Version>0.1.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <OutputPath>bin\$(Configuration)\$(AcadSeries)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <DefineConstants>$(DefineConstants);ACAD_$(AcadSeries)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Autodesk's reference assemblies; AutoCAD supplies the real ones at runtime. -->
+    <PackageReference Include="AutoCAD.NET" Version="$(AcadApiVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <!-- Shipped next to the plug-in (AutoCAD doesn't guarantee a copy). -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <!-- WinForms + System.Drawing (UseWindowsForms needs the Windows-only SDK, this works on any OS). -->
+  <ItemGroup Condition="'$(TargetFramework)' != 'net48'">
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+</Project>
