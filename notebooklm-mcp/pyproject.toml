@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nblm-mcp"
+version = "0.1.0"
+description = "Model Context Protocol server for Google NotebookLM: notebooks, sources, cited chat, research and Studio artifacts."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "C-Kajanan" }]
+keywords = ["mcp", "notebooklm", "claude", "model-context-protocol"]
+dependencies = [
+    "mcp>=2.3,<3",
+    "notebooklm-py>=0.8,<0.9",
+]
+
+[project.optional-dependencies]
+login = ["notebooklm-py[browser]>=0.8,<0.9"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+nblm-mcp = "nblm_mcp.server:main"
+
+[project.urls]
+Repository = "https://github.com/C-Kajanan/C-Kajanan/tree/main/notebooklm-mcp"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nblm_mcp"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
